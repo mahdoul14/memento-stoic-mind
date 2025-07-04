@@ -89,12 +89,17 @@ serve(async (req) => {
         },
         quantity: 1,
       }];
+      mode = "subscription";
     } else if (priceType === 'lifetime') {
-      // Use your actual product price ID for the lifetime plan
       lineItems = [{
-        price: "price_1QQo7zKLl9pHyQy2ScQxRn7u0bDsBg", // Your product price ID
+        price_data: {
+          currency: "gbp",
+          product_data: { name: "Lifetime Access" },
+          unit_amount: 7900, // £79.00
+        },
         quantity: 1,
       }];
+      mode = "payment"; // One-time payment for lifetime access
     } else {
       throw new Error("Invalid price type");
     }
