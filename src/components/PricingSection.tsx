@@ -4,17 +4,67 @@ import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useAuth } from "@/hooks/useAuth";
 import { Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const PricingSection = () => {
   const { ref: sectionRef, isVisible: sectionVisible } = useScrollAnimation();
-  const { subscribed, subscription_tier, loading, createCheckout, openCustomerPortal } = useSubscription();
-  const { user } = useAuth();
+  const { subscribed, subscription_tier, loading } = useSubscription();
+  const { user, session } = useAuth();
+  const { toast } = useToast();
 
-  const handleSubscribe = (priceType: 'monthly' | 'lifetime') => {
+  const handleSubscribe = async (priceType: 'monthly' | 'lifetime') => {
     if (subscribed) {
-      openCustomerPortal();
+      // If already subscribed, open customer portal (requires auth)
+      if (!user || !session) {
+        toast({
+          title: "Authentication Required",
+          description: "Please sign in to manage your subscription",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      try {
+        const { data, error } = await supabase.functions.invoke('customer-portal', {
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        });
+
+        if (error) throw error;
+        window.open(data.url, '_blank');
+      } catch (error) {
+        console.error('Error opening customer portal:', error);
+        toast({
+          title: "Error",
+          description: "Failed to open customer portal",
+          variant: "destructive",
+        });
+      }
     } else {
-      createCheckout(priceType);
+      // Create checkout (no auth required)
+      try {
+        const headers: Record<string, string> = {};
+        if (user && session) {
+          headers.Authorization = `Bearer ${session.access_token}`;
+        }
+
+        const { data, error } = await supabase.functions.invoke('create-checkout', {
+          body: { priceType },
+          headers,
+        });
+
+        if (error) throw error;
+        window.open(data.url, '_blank');
+      } catch (error) {
+        console.error('Error creating checkout:', error);
+        toast({
+          title: "Error",
+          description: "Failed to create checkout session",
+          variant: "destructive",
+        });
+      }
     }
   };
 
@@ -94,7 +144,7 @@ const PricingSection = () => {
               <div className="pt-4">
                 <Button 
                   onClick={() => handleSubscribe('monthly')}
-                  disabled={loading || !user}
+                  disabled={loading}
                   className="w-full bg-black text-white hover:bg-gray-800 hover:scale-105 hover:shadow-lg rounded-xl py-6 text-lg font-inter font-semibold transition-all duration-200 ease-in-out disabled:opacity-50"
                 >
                   {loading ? (
@@ -106,7 +156,7 @@ const PricingSection = () => {
                   }
                 </Button>
                 <p className="font-inter text-gray-500 text-sm text-center mt-3">
-                  {!user ? 'Sign in required' : '7-day free trial included. No risk.'}
+                  No sign-up required • Start immediately
                 </p>
               </div>
             </CardContent>
@@ -164,7 +214,7 @@ const PricingSection = () => {
               <div className="pt-4">
                 <Button 
                   onClick={() => handleSubscribe('lifetime')}
-                  disabled={loading || !user}
+                  disabled={loading}
                   className="w-full bg-black text-white hover:bg-gray-800 hover:scale-105 hover:shadow-lg rounded-xl py-6 text-lg font-inter font-semibold transition-all duration-200 ease-in-out disabled:opacity-50"
                 >
                   {loading ? (
@@ -176,7 +226,7 @@ const PricingSection = () => {
                   }
                 </Button>
                 <p className="font-inter text-gray-500 text-sm text-center mt-3">
-                  {!user ? 'Sign in required' : '7-day free trial included. No risk.'}
+                  No sign-up required • Start immediately
                 </p>
               </div>
             </CardContent>

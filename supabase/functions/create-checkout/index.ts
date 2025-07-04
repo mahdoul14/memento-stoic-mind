@@ -29,24 +29,42 @@ serve(async (req) => {
     const { priceType } = await req.json();
     logStep("Request received", { priceType });
 
-    const authHeader = req.headers.get("Authorization")!;
-    const token = authHeader.replace("Bearer ", "");
-    const { data } = await supabaseClient.auth.getUser(token);
-    const user = data.user;
-    if (!user?.email) throw new Error("User not authenticated or email not available");
-    logStep("User authenticated", { email: user.email });
+    // Try to get authenticated user, but don't require it
+    let user = null;
+    let customerEmail = "guest@example.com"; // Default for guest checkout
+    
+    try {
+      const authHeader = req.headers.get("Authorization");
+      if (authHeader) {
+        const token = authHeader.replace("Bearer ", "");
+        const { data } = await supabaseClient.auth.getUser(token);
+        if (data.user?.email) {
+          user = data.user;
+          customerEmail = user.email;
+          logStep("User authenticated", { email: user.email });
+        }
+      }
+    } catch (error) {
+      logStep("No authentication or auth failed, proceeding as guest");
+    }
+
+    if (!user) {
+      logStep("Proceeding with guest checkout", { email: customerEmail });
+    }
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", { apiVersion: "2023-10-16" });
     
-    // Check if customer already exists
-    const customers = await stripe.customers.list({ email: user.email, limit: 1 });
+    // Check if customer already exists (only for authenticated users)
     let customerId;
-    if (customers.data.length > 0) {
-      customerId = customers.data[0].id;
-      logStep("Existing customer found", { customerId });
+    if (user) {
+      const customers = await stripe.customers.list({ email: user.email, limit: 1 });
+      if (customers.data.length > 0) {
+        customerId = customers.data[0].id;
+        logStep("Existing customer found", { customerId });
+      }
     }
 
-    // Define pricing based on your pricing section
+    // Define pricing based on your actual product
     let lineItems;
     if (priceType === 'monthly') {
       lineItems = [{
@@ -59,13 +77,9 @@ serve(async (req) => {
         quantity: 1,
       }];
     } else if (priceType === 'lifetime') {
+      // Use your actual product ID for the lifetime plan
       lineItems = [{
-        price_data: {
-          currency: "gbp",
-          product_data: { name: "Lifetime Access" },
-          unit_amount: 7900, // £79.00
-          recurring: { interval: "year", interval_count: 100 }, // Simulate lifetime with 100 years
-        },
+        price: "price_1QQo7zKLl9pHyQy2ScQxRn7u0bDsBg", // Your product price ID
         quantity: 1,
       }];
     } else {
@@ -75,7 +89,7 @@ serve(async (req) => {
     const origin = req.headers.get("origin") || "http://localhost:3000";
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
-      customer_email: customerId ? undefined : user.email,
+      customer_email: customerId ? undefined : customerEmail,
       line_items: lineItems,
       mode: "subscription",
       success_url: `${origin}/?success=true`,

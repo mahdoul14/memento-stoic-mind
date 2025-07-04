@@ -4,19 +4,42 @@ import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useAuth } from "@/hooks/useAuth";
 import { Hourglass, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const ClosingCTA = () => {
   const { ref: ctaRef, isVisible: ctaVisible } = useScrollAnimation();
-  const { subscribed, loading, createCheckout } = useSubscription();
-  const { user } = useAuth();
+  const { subscribed, loading } = useSubscription();
+  const { user, session } = useAuth();
+  const { toast } = useToast();
 
-  const handleStartFree = () => {
+  const handleStartFree = async () => {
     if (subscribed) {
       // Redirect to dashboard if already subscribed
       window.location.href = '/dashboard';
     } else {
-      // Start with monthly subscription
-      createCheckout('monthly');
+      // Start with monthly subscription (no auth required)
+      try {
+        const headers: Record<string, string> = {};
+        if (user && session) {
+          headers.Authorization = `Bearer ${session.access_token}`;
+        }
+
+        const { data, error } = await supabase.functions.invoke('create-checkout', {
+          body: { priceType: 'monthly' },
+          headers,
+        });
+
+        if (error) throw error;
+        window.open(data.url, '_blank');
+      } catch (error) {
+        console.error('Error creating checkout:', error);
+        toast({
+          title: "Error",
+          description: "Failed to create checkout session",
+          variant: "destructive",
+        });
+      }
     }
   };
 
@@ -56,7 +79,7 @@ const ClosingCTA = () => {
           <div className="flex flex-col items-center space-y-3">
             <Button 
               onClick={handleStartFree}
-              disabled={loading || !user}
+              disabled={loading}
               className="bg-white text-black border border-gray-200 hover:bg-gray-50 hover:scale-105 hover:shadow-xl rounded-full px-12 py-4 text-lg font-inter font-medium group transition-all duration-300 ease-out disabled:opacity-50"
             >
               {loading ? (
@@ -65,7 +88,7 @@ const ClosingCTA = () => {
               {subscribed ? 'Go to Dashboard' : 'Start Free'}
             </Button>
             <p className="text-sm text-gray-500 font-inter">
-              {!user ? 'Sign in required' : subscribed ? 'Access your tools' : 'No sign-up needed'}
+              {subscribed ? 'Access your tools' : 'No sign-up needed • Start immediately'}
             </p>
           </div>
         </div>
