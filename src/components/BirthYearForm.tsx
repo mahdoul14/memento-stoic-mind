@@ -29,14 +29,24 @@ export const BirthYearForm = ({ userId, onBirthYearSaved }: BirthYearFormProps) 
 
     setSaving(true);
     try {
-      const { error } = await supabase
+      console.log('Attempting to save birth year:', year, 'for user:', userId);
+      
+      const { data, error } = await supabase
         .from('profiles')
         .upsert({
           user_id: userId,
           birth_year: year
-        });
+        }, {
+          onConflict: 'user_id'
+        })
+        .select();
 
-      if (error) throw error;
+      console.log('Upsert result:', { data, error });
+
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
 
       onBirthYearSaved(year);
       toast({
@@ -47,7 +57,7 @@ export const BirthYearForm = ({ userId, onBirthYearSaved }: BirthYearFormProps) 
       console.error('Error saving birth year:', error);
       toast({
         title: "Error saving birth year",
-        description: "Please try again.",
+        description: error instanceof Error ? error.message : "Please try again.",
         variant: "destructive"
       });
     } finally {

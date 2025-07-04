@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
@@ -44,13 +43,17 @@ const Dashboard = () => {
 
       setLoadingProfile(true);
       try {
+        console.log('Fetching profile for user:', user.id);
+        
         const { data, error } = await supabase
           .from('profiles')
           .select('birth_year')
           .eq('user_id', user.id)
-          .single();
+          .maybeSingle();
 
-        if (error && error.code !== 'PGRST116') {
+        console.log('Profile fetch result:', { data, error });
+
+        if (error) {
           console.error('Error fetching profile:', error);
         } else if (data && data.birth_year) {
           setBirthYear(data.birth_year);
@@ -77,15 +80,19 @@ const Dashboard = () => {
 
       setCheckingEntry(true);
       try {
+        console.log('Checking today\'s journal entry for user:', user.id);
+        
         const today = new Date().toISOString().split('T')[0];
         const { data, error } = await supabase
           .from('journal_entries')
           .select('id')
           .eq('user_id', user.id)
           .eq('date', today)
-          .single();
+          .maybeSingle();
 
-        if (error && error.code !== 'PGRST116') {
+        console.log('Journal entry check result:', { data, error });
+
+        if (error) {
           console.error('Error checking journal entry:', error);
         } else if (data) {
           setHasEntryToday(true);
@@ -125,15 +132,23 @@ const Dashboard = () => {
     
     setIsSaving(true);
     try {
-      const { error } = await supabase
+      console.log('Attempting to save journal entry for user:', user.id);
+      
+      const { data, error } = await supabase
         .from('journal_entries')
         .insert({
           user_id: user.id,
           entry_text: journalText.trim(),
           date: new Date().toISOString().split('T')[0]
-        });
+        })
+        .select();
 
-      if (error) throw error;
+      console.log('Journal save result:', { data, error });
+
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
 
       setJournalText('');
       setIsJournalExpanded(false);
@@ -146,7 +161,7 @@ const Dashboard = () => {
       console.error('Error saving journal entry:', error);
       toast({
         title: "Error saving",
-        description: "There was a problem saving your reflection. Please try again.",
+        description: error instanceof Error ? error.message : "There was a problem saving your reflection. Please try again.",
         variant: "destructive"
       });
     } finally {
