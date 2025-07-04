@@ -116,5 +116,18 @@ html {
   opacity: 0;
 }
 
+/* 3D perspective transforms for phones */
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.rotate-y-12 {
+  transform: rotateY(12deg) rotateX(8deg);
+}
+
+.rotate-y-[-12deg] {
+  transform: rotateY(-12deg) rotateX(8deg);
+}
+
 /* Ensure Inter font loads properly */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');

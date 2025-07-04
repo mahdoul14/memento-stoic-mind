@@ -75,6 +75,13 @@ export default {
 				md: 'calc(var(--radius) - 2px)',
 				sm: 'calc(var(--radius) - 4px)'
 			},
+			rotate: {
+				'y-12': '12deg',
+				'y-[-12deg]': '-12deg',
+			},
+			perspective: {
+				'1000': '1000px',
+			},
 			keyframes: {
 				'fade-in': {
 					'0%': {
