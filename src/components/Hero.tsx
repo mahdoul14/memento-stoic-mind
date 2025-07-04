@@ -1,8 +1,11 @@
 
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
+import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 
 const Hero = () => {
+  const { ref: phonesRef, isVisible } = useScrollAnimation({ threshold: 0.2 });
+
   return (
     <section className="bg-white py-24 lg:py-32">
       <div className="container mx-auto px-6 text-center">
@@ -20,9 +23,23 @@ const Hero = () => {
           </Button>
         </div>
         
-        <div className="flex flex-col lg:flex-row gap-8 justify-center items-center max-w-4xl mx-auto">
-          <div className="relative animate-fade-in" style={{ animationDelay: '0.3s' }}>
-            <div className="w-64 h-[520px] bg-gray-100 rounded-[3rem] border-8 border-gray-800 relative overflow-hidden transform rotate-[-8deg]">
+        <div 
+          ref={phonesRef}
+          className="flex flex-col lg:flex-row gap-8 justify-center items-center max-w-4xl mx-auto"
+        >
+          <div 
+            className={`relative animate-fade-in transition-all duration-700 ease-out ${
+              isVisible 
+                ? 'transform rotate-y-[-6deg] scale-105' 
+                : 'transform rotate-y-0 scale-100'
+            }`}
+            style={{ 
+              animationDelay: '0.3s',
+              transformStyle: 'preserve-3d',
+              filter: isVisible ? 'drop-shadow(0 25px 50px rgba(0, 0, 0, 0.15))' : 'drop-shadow(0 20px 40px rgba(0, 0, 0, 0.1))'
+            }}
+          >
+            <div className="w-64 h-[520px] bg-white rounded-[3rem] border-8 border-gray-800 relative overflow-hidden transform rotate-[-8deg] shadow-2xl">
               <div className="absolute top-0 left-0 w-full h-full bg-white m-2 rounded-[2.5rem] flex flex-col p-6">
                 <div className="bg-gray-50 rounded-2xl p-4 mb-4">
                   <div className="text-sm font-inter font-medium text-gray-600 mb-2">MarcusGPT</div>
@@ -39,8 +56,19 @@ const Hero = () => {
             </div>
           </div>
           
-          <div className="relative animate-fade-in" style={{ animationDelay: '0.6s' }}>
-            <div className="w-64 h-[520px] bg-gray-100 rounded-[3rem] border-8 border-gray-800 relative overflow-hidden transform rotate-[8deg]">
+          <div 
+            className={`relative animate-fade-in transition-all duration-700 ease-out ${
+              isVisible 
+                ? 'transform rotate-y-[6deg] scale-105' 
+                : 'transform rotate-y-0 scale-100'
+            }`}
+            style={{ 
+              animationDelay: '0.6s',
+              transformStyle: 'preserve-3d',
+              filter: isVisible ? 'drop-shadow(0 25px 50px rgba(0, 0, 0, 0.15))' : 'drop-shadow(0 20px 40px rgba(0, 0, 0, 0.1))'
+            }}
+          >
+            <div className="w-64 h-[520px] bg-white rounded-[3rem] border-8 border-gray-800 relative overflow-hidden transform rotate-[8deg] shadow-2xl">
               <div className="absolute top-0 left-0 w-full h-full bg-white m-2 rounded-[2.5rem] flex flex-col items-center justify-center p-6">
                 <div className="text-center">
                   <div className="text-sm font-inter font-medium text-gray-600 mb-6">Memento Mori</div>

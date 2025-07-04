@@ -116,5 +116,20 @@ html {
   opacity: 0;
 }
 
+/* Custom 3D rotation utilities */
+@layer utilities {
+  .rotate-y-0 {
+    transform: rotateY(0deg);
+  }
+  
+  .rotate-y-6 {
+    transform: rotateY(6deg);
+  }
+  
+  .rotate-y-\[-6deg\] {
+    transform: rotateY(-6deg);
+  }
+}
+
 /* Ensure Inter font loads properly */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
