@@ -3,8 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Clock, Lightbulb, Library, User, MessageCircle, TrendingUp, LogOut, Home } from "lucide-react";
+import { Clock, Lightbulb, Library, User, MessageCircle, TrendingUp, LogOut, Home, Lock } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useSubscription } from "@/hooks/useSubscription";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
 import { BirthYearForm } from "@/components/BirthYearForm";
@@ -13,7 +14,8 @@ import { VirtueTracker } from "@/components/VirtueTracker";
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { user, signOut, loading } = useAuth();
+  const { user, signOut, loading: authLoading } = useAuth();
+  const { subscribed, loading: subscriptionLoading } = useSubscription();
   const [animateCards, setAnimateCards] = useState(false);
   const [typingDots, setTypingDots] = useState('');
 
@@ -29,13 +31,17 @@ const Dashboard = () => {
   const [age, setAge] = useState(0);
   const [loadingProfile, setLoadingProfile] = useState(true);
 
-  // Redirect to auth if not authenticated
+  // Redirect if not authenticated
   useEffect(() => {
-    if (!loading && !user) {
+    if (!authLoading && !user) {
       console.log('No user found, redirecting to auth');
       navigate('/auth');
     }
-  }, [user, loading, navigate]);
+  }, [user, authLoading, navigate]);
+
+  // Check if user has access (authenticated AND subscribed)
+  const hasAccess = user && subscribed;
+  const isLoading = authLoading || subscriptionLoading;
 
   // Fetch user profile data
   useEffect(() => {
@@ -192,8 +198,34 @@ const Dashboard = () => {
     }
   };
 
-  // Show loading while checking auth
-  if (loading) {
+  const handleUpgrade = async () => {
+    try {
+      const headers: Record<string, string> = {};
+      if (user) {
+        headers.Authorization = `Bearer ${user.access_token}`;
+      }
+
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: { priceType: 'monthly' },
+        headers,
+      });
+
+      if (error) throw error;
+      
+      // Redirect to Stripe Checkout
+      window.location.href = data.url;
+    } catch (error) {
+      console.error('Error creating checkout:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create checkout session",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Show loading while checking auth and subscription
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-lg text-gray-600">Loading...</div>
@@ -204,6 +236,102 @@ const Dashboard = () => {
   // Don't render if not authenticated
   if (!user) {
     return null;
+  }
+
+  // Show subscription required screen if user doesn't have access
+  if (!hasAccess) {
+    return (
+      <div className="min-h-screen bg-gray-50 text-black font-inter">
+        {/* Header */}
+        <div className="flex justify-between items-center p-6 bg-white shadow-sm">
+          <div>
+            <h1 className="text-2xl font-bold text-black">Dashboard</h1>
+            <p className="text-gray-500 text-sm mt-1">Premium access required</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-black rounded-full flex items-center justify-center">
+              <div className="w-4 h-4 bg-white rounded-full"></div>
+            </div>
+            <Button
+              onClick={handleSignOut}
+              variant="ghost"
+              size="sm"
+              className="text-gray-600 hover:text-black hover:bg-gray-100 transition-all duration-200 hover:scale-105"
+            >
+              <LogOut size={16} />
+            </Button>
+          </div>
+        </div>
+
+        {/* Subscription Required Content */}
+        <div className="flex items-center justify-center min-h-[80vh] px-6">
+          <Card className="bg-white rounded-3xl shadow-xl border-0 max-w-md w-full">
+            <CardContent className="p-8 text-center">
+              <div className="mb-6">
+                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Lock className="w-8 h-8 text-gray-600" />
+                </div>
+                <h2 className="text-2xl font-bold text-black mb-2">Premium Access Required</h2>
+                <p className="text-gray-600 leading-relaxed">
+                  Unlock your personal Stoic dashboard with journaling, virtue tracking, and wisdom from Marcus Aurelius.
+                </p>
+              </div>
+
+              <div className="space-y-4 mb-6">
+                <div className="flex items-center text-gray-700 text-sm">
+                  <div className="w-4 h-4 bg-black rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                    <svg className="w-2 h-2 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <span>Daily journal with AI insights</span>
+                </div>
+                <div className="flex items-center text-gray-700 text-sm">
+                  <div className="w-4 h-4 bg-black rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                    <svg className="w-2 h-2 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <span>Virtue tracking & progress</span>
+                </div>
+                <div className="flex items-center text-gray-700 text-sm">
+                  <div className="w-4 h-4 bg-black rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                    <svg className="w-2 h-2 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <span>Memento Mori life visualization</span>
+                </div>
+                <div className="flex items-center text-gray-700 text-sm">
+                  <div className="w-4 h-4 bg-black rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                    <svg className="w-2 h-2 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <span>Chat with Marcus Aurelius</span>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <Button 
+                  onClick={handleUpgrade}
+                  className="w-full bg-black text-white hover:bg-gray-800 font-medium rounded-full py-3 text-base transition-all duration-200 hover:scale-105"
+                >
+                  Upgrade to Premium - £9/month
+                </Button>
+                <Button 
+                  onClick={() => navigate('/')}
+                  variant="outline"
+                  className="w-full border-gray-300 text-gray-700 hover:bg-gray-50 rounded-full py-3 text-base transition-all duration-200"
+                >
+                  Back to Home
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
   }
 
   const virtues = [
@@ -339,7 +467,7 @@ const Dashboard = () => {
           </Card>
         </div>
 
-        {/* Virtue Tracker Section - NEW */}
+        {/* Virtue Tracker Section */}
         <Card className={`bg-white rounded-3xl shadow-lg border-0 transition-all duration-700 ease-out hover:shadow-xl hover:-translate-y-1 ${
           animateCards ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
         }`} style={{ animationDelay: '0.3s' }}>

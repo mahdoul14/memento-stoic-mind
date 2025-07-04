@@ -12,12 +12,16 @@ interface SubscriptionData {
 
 export const useSubscription = () => {
   const [subscriptionData, setSubscriptionData] = useState<SubscriptionData>({ subscribed: false });
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true); // Start with true to show loading initially
   const { user, session } = useAuth();
   const { toast } = useToast();
 
   const checkSubscription = async () => {
-    if (!user || !session) return;
+    if (!user || !session) {
+      setSubscriptionData({ subscribed: false });
+      setLoading(false);
+      return;
+    }
     
     setLoading(true);
     try {
@@ -33,6 +37,7 @@ export const useSubscription = () => {
       console.log('Subscription status updated:', data);
     } catch (error) {
       console.error('Error checking subscription:', error);
+      setSubscriptionData({ subscribed: false });
       toast({
         title: "Error",
         description: "Failed to check subscription status",
@@ -109,10 +114,13 @@ export const useSubscription = () => {
   useEffect(() => {
     if (user && session) {
       checkSubscription();
+    } else {
+      setSubscriptionData({ subscribed: false });
+      setLoading(false);
     }
   }, [user, session]);
 
-  // Auto-refresh subscription status every 30 seconds
+  // Auto-refresh subscription status every 30 seconds (only if user is authenticated)
   useEffect(() => {
     if (!user || !session) return;
 
