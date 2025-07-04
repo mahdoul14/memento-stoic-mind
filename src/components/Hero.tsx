@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
@@ -11,10 +12,10 @@ const Hero = () => {
       <div className="container mx-auto px-6 text-center">
         <div className="animate-fade-in">
           <h1 className="font-inter font-bold text-5xl lg:text-7xl text-black mb-6 tracking-tight">
-            Become Stoic in the Age of Distraction
+            MEMENTO
           </h1>
-          <p className="font-inter text-xl lg:text-2xl text-gray-600 mb-12 max-w-3xl mx-auto">
-            A calm AI dashboard for discipline, clarity, and reflection.
+          <p className="font-inter text-xl lg:text-2xl text-gray-600 mb-12 max-w-4xl mx-auto leading-relaxed">
+            A quiet app for people who seek stillness, clarity, and self-mastery. Inspired by ancient Stoicism. Built for modern life.
           </p>
           
           <Button className="bg-black text-white hover:bg-gray-800 hover:scale-105 hover:shadow-lg rounded-full px-8 py-4 text-lg font-inter font-medium mb-16 group transition-all duration-200 ease-in-out">
@@ -33,7 +34,7 @@ const Hero = () => {
                 : 'opacity-0 translate-y-8'
             }`}
           >
-            <div className="w-72 h-[580px] bg-black rounded-[2.5rem] p-2 transform perspective-1000 rotate-y-[-12deg] rotate-x-[8deg] shadow-2xl">
+            <div className="w-72 h-[580px] bg-black rounded-[2.5rem] p-2 transform perspective-1000 rotate-y-[-12deg] rotate-x-[8deg] shadow-2xl hover:shadow-3xl hover:scale-105 transition-all duration-500 ease-out">
               <div className="w-full h-full bg-white rounded-[2rem] overflow-hidden flex flex-col">
                 {/* Status Bar */}
                 <div className="flex justify-between items-center px-6 py-3 text-xs text-black">
@@ -88,7 +89,7 @@ const Hero = () => {
                 : 'opacity-0 translate-y-8'
             }`}
           >
-            <div className="w-72 h-[580px] bg-black rounded-[2.5rem] p-2 transform perspective-1000 rotate-y-[12deg] rotate-x-[8deg] shadow-2xl">
+            <div className="w-72 h-[580px] bg-black rounded-[2.5rem] p-2 transform perspective-1000 rotate-y-[12deg] rotate-x-[8deg] shadow-2xl hover:shadow-3xl hover:scale-105 transition-all duration-500 ease-out">
               <div className="w-full h-full bg-white rounded-[2rem] overflow-hidden flex flex-col">
                 {/* Status Bar */}
                 <div className="flex justify-between items-center px-6 py-3 text-xs text-black">
