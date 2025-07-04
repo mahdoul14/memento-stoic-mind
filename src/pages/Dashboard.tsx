@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
@@ -25,6 +26,12 @@ const Dashboard = () => {
   const [hasEntryToday, setHasEntryToday] = useState(false);
   const [checkingEntry, setCheckingEntry] = useState(true);
 
+  // Memento Mori state
+  const [birthYear, setBirthYear] = useState<number | null>(null);
+  const [age, setAge] = useState(0);
+  const [loadingProfile, setLoadingProfile] = useState(true);
+  const [filledDots, setFilledDots] = useState(0);
+
   // Redirect to auth if not authenticated
   useEffect(() => {
     if (!loading && !user) {
@@ -32,6 +39,39 @@ const Dashboard = () => {
       navigate('/auth');
     }
   }, [user, loading, navigate]);
+
+  // Fetch user profile data
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (!user) return;
+
+      setLoadingProfile(true);
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('birth_year')
+          .eq('user_id', user.id)
+          .single();
+
+        if (error && error.code !== 'PGRST116') {
+          console.error('Error fetching profile:', error);
+        } else if (data && data.birth_year) {
+          setBirthYear(data.birth_year);
+          const currentYear = new Date().getFullYear();
+          const calculatedAge = currentYear - data.birth_year;
+          setAge(calculatedAge);
+        }
+      } catch (error) {
+        console.error('Error fetching profile:', error);
+      } finally {
+        setLoadingProfile(false);
+      }
+    };
+
+    if (user) {
+      fetchProfile();
+    }
+  }, [user]);
 
   // Check for existing journal entry today
   useEffect(() => {
@@ -82,24 +122,24 @@ const Dashboard = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Memento Mori progress animation
+  // Animate dots filling for Memento Mori
   useEffect(() => {
-    if (animateCards) {
+    if (animateCards && birthYear && age > 0) {
       const timer = setTimeout(() => {
         const interval = setInterval(() => {
-          setMementoProgress(prev => {
-            if (prev >= 32) {
+          setFilledDots(prev => {
+            if (prev >= age) {
               clearInterval(interval);
-              return 32;
+              return age;
             }
             return prev + 1;
           });
-        }, 20);
+        }, 30);
         return () => clearInterval(interval);
-      }, 1000);
+      }, 1500);
       return () => clearTimeout(timer);
     }
-  }, [animateCards]);
+  }, [animateCards, birthYear, age]);
 
   // Virtue tracker animations
   useEffect(() => {
@@ -370,50 +410,50 @@ const Dashboard = () => {
               <h3 className="text-lg font-bold text-black">Memento Mori</h3>
             </div>
             
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <p className="text-gray-700 text-sm mb-2">Time is finite — cherish each moment</p>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-2xl font-bold text-black">73</span>
-                  <span className="text-gray-500 text-sm">Years Left</span>
-                </div>
-              </div>
-              <div className="relative w-16 h-16">
-                <svg className="w-16 h-16 transform -rotate-90" viewBox="0 0 64 64">
-                  <circle
-                    cx="32"
-                    cy="32"
-                    r="28"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                    fill="none"
-                    className="text-gray-200"
-                  />
-                  <circle
-                    cx="32"
-                    cy="32"
-                    r="28"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                    fill="none"
-                    strokeDasharray={`${32 * 2 * Math.PI}`}
-                    strokeDashoffset={`${32 * 2 * Math.PI * (1 - mementoProgress / 100)}`}
-                    className="text-black transition-all duration-1000 ease-out"
-                  />
-                </svg>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-xs font-bold">{mementoProgress}%</span>
-                </div>
-              </div>
-            </div>
+            <p className="text-gray-700 text-sm mb-4">A visual reminder that time is finite.</p>
             
-            <Button 
-              onClick={() => navigate('/memento')}
-              variant="outline" 
-              className="w-full border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-black rounded-xl transition-all duration-200 hover:scale-105"
-            >
-              View Timeline
-            </Button>
+            {loadingProfile ? (
+              <div className="text-gray-500 text-sm">Loading your timeline...</div>
+            ) : !birthYear ? (
+              <div className="text-gray-500 text-sm">Enter your birth year to view your timeline.</div>
+            ) : (
+              <div>
+                <div className="mb-4 text-center">
+                  <div className="text-2xl font-bold text-black">{age}</div>
+                  <div className="text-sm text-gray-500">years lived</div>
+                </div>
+                
+                {/* 10x10 Grid of Dots */}
+                <div className="grid grid-cols-10 gap-1 justify-center max-w-[200px] mx-auto mb-4">
+                  {[...Array(100)].map((_, index) => {
+                    const yearNumber = index + 1;
+                    const isFilled = index < filledDots;
+                    const isCurrentYear = index === age - 1;
+                    
+                    return (
+                      <div
+                        key={index}
+                        className={`w-4 h-4 rounded-full border transition-all duration-200 hover:scale-125 cursor-pointer ${
+                          isFilled 
+                            ? isCurrentYear 
+                              ? 'bg-red-500 border-red-600' 
+                              : 'bg-black border-black'
+                            : 'bg-gray-100 border-gray-300 hover:bg-gray-200'
+                        }`}
+                        title={`Year ${yearNumber}: Age ${yearNumber - 1}`}
+                        style={{
+                          transitionDelay: `${index * 10}ms`
+                        }}
+                      />
+                    );
+                  })}
+                </div>
+                
+                <div className="text-center text-xs text-gray-500">
+                  {100 - age} years remaining (assuming 100 year lifespan)
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
 
