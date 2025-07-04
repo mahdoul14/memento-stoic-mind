@@ -50,8 +50,8 @@ const ModernOperatingCards: React.FC = () => {
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.2,
-        delayChildren: 0.1
+        staggerChildren: 0.15,
+        delayChildren: 0.2
       }
     }
   };
@@ -59,7 +59,7 @@ const ModernOperatingCards: React.FC = () => {
   const cardVariants = {
     hidden: { 
       opacity: 0, 
-      y: 50,
+      y: 40,
       scale: 0.95
     },
     visible: {
@@ -67,10 +67,8 @@ const ModernOperatingCards: React.FC = () => {
       y: 0,
       scale: 1,
       transition: {
-        duration: 0.6,
-        type: "spring",
-        stiffness: 100,
-        damping: 15
+        duration: 0.8,
+        ease: [0.25, 0.4, 0.25, 1]
       }
     }
   };
@@ -81,7 +79,7 @@ const ModernOperatingCards: React.FC = () => {
       variants={containerVariants}
       initial="hidden"
       whileInView="visible"
-      viewport={{ once: true, margin: "-100px" }}
+      viewport={{ once: true, margin: "-80px" }}
     >
       {cardData.map((card, index) => (
         <motion.div
@@ -89,8 +87,8 @@ const ModernOperatingCards: React.FC = () => {
           variants={cardVariants}
           whileHover={{ 
             scale: 1.02,
-            y: -5,
-            transition: { duration: 0.3, type: "spring", stiffness: 400 }
+            y: -8,
+            transition: { duration: 0.3, ease: [0.25, 0.4, 0.25, 1] }
           }}
           className="group relative"
         >

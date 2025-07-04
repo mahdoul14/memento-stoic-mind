@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
@@ -5,11 +6,19 @@ import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 const Hero = () => {
   const { ref: leftPhoneRef, isVisible: leftPhoneVisible } = useScrollAnimation();
   const { ref: rightPhoneRef, isVisible: rightPhoneVisible } = useScrollAnimation();
+  const { ref: heroTextRef, isVisible: heroTextVisible } = useScrollAnimation();
 
   return (
     <section className="bg-white py-24 lg:py-32">
       <div className="container mx-auto px-6 text-center">
-        <div className="animate-fade-in">
+        <div 
+          ref={heroTextRef}
+          className={`transition-all duration-1000 ease-out ${
+            heroTextVisible 
+              ? 'opacity-100 translate-y-0' 
+              : 'opacity-0 translate-y-8'
+          }`}
+        >
           <h1 className="font-inter font-bold text-5xl lg:text-7xl text-black mb-6 tracking-tight">
             Become Stoic in the Age of Distraction
           </h1>
@@ -27,13 +36,14 @@ const Hero = () => {
           {/* Phone 1 - MarcusGPT */}
           <div 
             ref={leftPhoneRef}
-            className={`relative transition-all duration-700 ease-out delay-300 ${
+            className={`relative transition-all duration-1200 ease-out ${
               leftPhoneVisible 
-                ? 'opacity-100 translate-y-0' 
-                : 'opacity-0 translate-y-8'
+                ? 'opacity-100 translate-y-0 translate-x-0' 
+                : 'opacity-0 translate-y-12 -translate-x-8'
             }`}
+            style={{ transitionDelay: leftPhoneVisible ? '300ms' : '0ms' }}
           >
-            <div className="w-72 h-[580px] bg-black rounded-[2.5rem] p-2 transform perspective-1000 rotate-y-[-12deg] rotate-x-[8deg] shadow-2xl">
+            <div className="w-72 h-[580px] bg-black rounded-[2.5rem] p-2 transform perspective-1000 rotate-y-[-12deg] rotate-x-[8deg] shadow-2xl hover:shadow-3xl hover:scale-105 transition-all duration-500 ease-out">
               <div className="w-full h-full bg-white rounded-[2rem] overflow-hidden flex flex-col">
                 {/* Status Bar */}
                 <div className="flex justify-between items-center px-6 py-3 text-xs text-black">
@@ -82,13 +92,14 @@ const Hero = () => {
           {/* Phone 2 - Memento Mori */}
           <div 
             ref={rightPhoneRef}
-            className={`relative transition-all duration-700 ease-out delay-[450ms] ${
+            className={`relative transition-all duration-1200 ease-out ${
               rightPhoneVisible 
-                ? 'opacity-100 translate-y-0' 
-                : 'opacity-0 translate-y-8'
+                ? 'opacity-100 translate-y-0 translate-x-0' 
+                : 'opacity-0 translate-y-12 translate-x-8'
             }`}
+            style={{ transitionDelay: rightPhoneVisible ? '500ms' : '0ms' }}
           >
-            <div className="w-72 h-[580px] bg-black rounded-[2.5rem] p-2 transform perspective-1000 rotate-y-[12deg] rotate-x-[8deg] shadow-2xl">
+            <div className="w-72 h-[580px] bg-black rounded-[2.5rem] p-2 transform perspective-1000 rotate-y-[12deg] rotate-x-[8deg] shadow-2xl hover:shadow-3xl hover:scale-105 transition-all duration-500 ease-out">
               <div className="w-full h-full bg-white rounded-[2rem] overflow-hidden flex flex-col">
                 {/* Status Bar */}
                 <div className="flex justify-between items-center px-6 py-3 text-xs text-black">
