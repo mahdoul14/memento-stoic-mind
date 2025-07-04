@@ -4,6 +4,7 @@ import Hero from "@/components/Hero";
 import ToolsShowcase from "@/components/ToolsShowcase";
 import ChatPreview from "@/components/ChatPreview";
 import PricingSection from "@/components/PricingSection";
+import TestimonialsSection from "@/components/TestimonialsSection";
 import QuoteBanner from "@/components/QuoteBanner";
 import Footer from "@/components/Footer";
 
@@ -15,6 +16,7 @@ const Index = () => {
       <ToolsShowcase />
       <ChatPreview />
       <PricingSection />
+      <TestimonialsSection />
       <QuoteBanner />
       <Footer />
     </div>
