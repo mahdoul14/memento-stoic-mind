@@ -84,64 +84,47 @@ serve(async (req) => {
     const origin = req.headers.get("origin") || "http://localhost:3000";
     let sessionConfig;
 
-    // Handle different pricing scenarios
-    if (productId) {
-      // If productId is provided, use it directly
-      logStep("Using provided product ID", { productId });
-      sessionConfig = {
-        customer: customerId,
-        customer_email: customerId ? undefined : customerEmail,
-        line_items: [{
-          price: productId,
-          quantity: 1,
-        }],
-        mode: "subscription", // Default to subscription, can be overridden
-        success_url: `${origin}/?success=true&session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${origin}/?canceled=true`,
-        allow_promotion_codes: true,
-        billing_address_collection: 'required' as const,
-      };
-    } else {
-      // Legacy support for priceType
-      let lineItems;
-      let mode = "subscription";
-      
-      if (priceType === 'monthly') {
-        lineItems = [{
-          price_data: {
-            currency: "gbp",
-            product_data: { name: "Monthly Access" },
-            unit_amount: 900, // £9.00
-            recurring: { interval: "month" },
-          },
-          quantity: 1,
-        }];
-        mode = "subscription";
-      } else if (priceType === 'lifetime') {
-        lineItems = [{
-          price_data: {
-            currency: "gbp",
-            product_data: { name: "Lifetime Access" },
-            unit_amount: 7900, // £79.00
-          },
-          quantity: 1,
-        }];
-        mode = "payment"; // One-time payment for lifetime access
-      } else {
-        throw new Error("Invalid price type");
-      }
+    // Map priceType to actual Stripe product IDs
+    let stripeProductId;
+    let mode = "subscription";
 
-      sessionConfig = {
-        customer: customerId,
-        customer_email: customerId ? undefined : customerEmail,
-        line_items: lineItems,
-        mode: mode,
-        success_url: `${origin}/?success=true&session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${origin}/?canceled=true`,
-        allow_promotion_codes: true,
-        billing_address_collection: 'required' as const,
-      };
+    if (priceType === 'monthly') {
+      stripeProductId = "prod_ScQx7NIRno1qid"; // £9/month
+      mode = "subscription";
+    } else if (priceType === 'lifetime') {
+      stripeProductId = "prod_ScQxRn7u0bDsBg"; // £79 one-time
+      mode = "payment";
+    } else if (productId) {
+      // If productId is provided directly, use it
+      stripeProductId = productId;
+      mode = "subscription"; // Default, but could be overridden
+    } else {
+      throw new Error("Invalid price type or product ID");
     }
+
+    logStep("Using Stripe product", { productId: stripeProductId, mode });
+
+    // Get the product and its default price
+    const product = await stripe.products.retrieve(stripeProductId);
+    if (!product.default_price) {
+      throw new Error(`Product ${stripeProductId} has no default price`);
+    }
+
+    logStep("Retrieved product", { name: product.name, defaultPrice: product.default_price });
+
+    sessionConfig = {
+      customer: customerId,
+      customer_email: customerId ? undefined : customerEmail,
+      line_items: [{
+        price: product.default_price as string,
+        quantity: 1,
+      }],
+      mode: mode as "subscription" | "payment",
+      success_url: `${origin}/?success=true&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/?canceled=true`,
+      allow_promotion_codes: true,
+      billing_address_collection: 'required' as const,
+    };
 
     logStep("Creating checkout session", { config: sessionConfig });
 
