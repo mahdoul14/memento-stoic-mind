@@ -14,19 +14,28 @@ export function useAuth() {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        console.log('Auth state changed:', event, session?.user?.email)
         setSession(session)
         setUser(session?.user ?? null)
         setLoading(false)
         
         // Redirect to dashboard after successful sign in
         if (event === 'SIGNED_IN' && session?.user) {
+          console.log('User signed in, redirecting to dashboard')
           navigate('/dashboard')
+        }
+        
+        // Redirect to home after sign out
+        if (event === 'SIGNED_OUT') {
+          console.log('User signed out, redirecting to home')
+          navigate('/')
         }
       }
     )
 
     // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('Initial session check:', session?.user?.email)
       setSession(session)
       setUser(session?.user ?? null)
       setLoading(false)
@@ -51,10 +60,12 @@ export function useAuth() {
 
   const signInWithEmail = async (email: string, password: string) => {
     try {
+      console.log('Attempting to sign in with email:', email)
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password
       })
+      console.log('Sign in result:', data, error)
       return { data, error }
     } catch (error) {
       console.error('Error signing in with email:', error)
@@ -64,6 +75,7 @@ export function useAuth() {
 
   const signUpWithEmail = async (email: string, password: string) => {
     try {
+      console.log('Attempting to sign up with email:', email)
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -71,6 +83,7 @@ export function useAuth() {
           emailRedirectTo: `${window.location.origin}/dashboard`
         }
       })
+      console.log('Sign up result:', data, error)
       return { data, error }
     } catch (error) {
       console.error('Error signing up with email:', error)
@@ -80,9 +93,9 @@ export function useAuth() {
 
   const signOut = async () => {
     try {
+      console.log('Signing out...')
       const { error } = await supabase.auth.signOut()
       if (error) throw error
-      navigate('/')
     } catch (error) {
       console.error('Error signing out:', error)
     }

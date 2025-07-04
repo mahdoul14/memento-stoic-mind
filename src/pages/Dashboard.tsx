@@ -11,10 +11,11 @@ const Dashboard = () => {
   const { user, signOut, loading } = useAuth();
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
 
-  // Redirect to home if not authenticated
+  // Redirect to auth if not authenticated
   useEffect(() => {
     if (!loading && !user) {
-      navigate('/');
+      console.log('No user found, redirecting to auth');
+      navigate('/auth');
     }
   }, [user, loading, navigate]);
 
@@ -78,7 +79,10 @@ const Dashboard = () => {
       {/* Sign out button */}
       <div className="fixed top-6 right-6 z-50">
         <Button
-          onClick={signOut}
+          onClick={() => {
+            console.log('Signing out...');
+            signOut();
+          }}
           variant="outline"
           className="flex items-center gap-2"
         >
@@ -134,7 +138,10 @@ const Dashboard = () => {
                 <Card
                   key={tool.id}
                   className="group bg-white border-0 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer hover:scale-[1.02]"
-                  onClick={() => navigate(tool.route)}
+                  onClick={() => {
+                    console.log(`Navigating to ${tool.route}`);
+                    navigate(tool.route);
+                  }}
                   onMouseEnter={() => setHoveredCard(tool.id)}
                   onMouseLeave={() => setHoveredCard(null)}
                 >
