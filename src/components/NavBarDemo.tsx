@@ -10,8 +10,8 @@ export function NavBarDemo() {
   const navigate = useNavigate()
 
   const navItems = [
-    { name: 'About', url: '#about', icon: User },
     { name: 'Tools', url: '#tools', icon: Briefcase },
+    { name: 'Dashboard', url: '#dashboard', icon: User },
     { name: 'Pricing', url: '#pricing', icon: DollarSign }
   ]
 
