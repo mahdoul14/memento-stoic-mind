@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
@@ -14,9 +13,6 @@ const Hero = () => {
           <h1 className="font-inter font-bold text-5xl lg:text-7xl text-black mb-6 tracking-tight">
             Become Stoic in the Age of Distraction
           </h1>
-          <p className="font-inter text-xl lg:text-2xl text-gray-600 mb-4 max-w-3xl mx-auto">
-            A quiet app for people who seek stillness, clarity, and self-mastery. Inspired by ancient Stoicism. Built for modern life.
-          </p>
           <p className="font-inter text-lg text-gray-500 mb-12 max-w-2xl mx-auto">
             A calm AI dashboard for discipline, clarity, and reflection.
           </p>
