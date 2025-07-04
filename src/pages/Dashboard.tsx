@@ -22,6 +22,8 @@ const Dashboard = () => {
   const [isJournalExpanded, setIsJournalExpanded] = useState(false);
   const [journalText, setJournalText] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [hasEntryToday, setHasEntryToday] = useState(false);
+  const [checkingEntry, setCheckingEntry] = useState(true);
 
   // Redirect to auth if not authenticated
   useEffect(() => {
@@ -30,6 +32,38 @@ const Dashboard = () => {
       navigate('/auth');
     }
   }, [user, loading, navigate]);
+
+  // Check for existing journal entry today
+  useEffect(() => {
+    const checkTodaysEntry = async () => {
+      if (!user) return;
+
+      setCheckingEntry(true);
+      try {
+        const today = new Date().toISOString().split('T')[0];
+        const { data, error } = await supabase
+          .from('journal_entries')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('date', today)
+          .single();
+
+        if (error && error.code !== 'PGRST116') {
+          console.error('Error checking journal entry:', error);
+        } else if (data) {
+          setHasEntryToday(true);
+        }
+      } catch (error) {
+        console.error('Error checking journal entry:', error);
+      } finally {
+        setCheckingEntry(false);
+      }
+    };
+
+    if (user) {
+      checkTodaysEntry();
+    }
+  }, [user]);
 
   // Trigger staggered animations after mount
   useEffect(() => {
@@ -111,6 +145,7 @@ const Dashboard = () => {
       // Success - clear form and show toast
       setJournalText('');
       setIsJournalExpanded(false);
+      setHasEntryToday(true);
       toast({
         title: "Saved successfully",
         description: "Your reflection has been saved.",
@@ -214,11 +249,21 @@ const Dashboard = () => {
             <CardContent className="p-6 relative overflow-hidden">
               <div className="mb-4">
                 <h3 className="text-lg font-bold mb-2">Today's Journal</h3>
-                <div className="text-gray-600 text-sm leading-relaxed relative">
-                  <span className="hover:bg-gradient-to-r hover:from-gray-600 hover:via-gray-400 hover:to-gray-600 hover:bg-clip-text hover:text-transparent transition-all duration-300">
-                    "What challenged your patience today?"
-                  </span>
-                </div>
+                {checkingEntry ? (
+                  <div className="text-gray-600 text-sm leading-relaxed">
+                    Checking today's entry...
+                  </div>
+                ) : hasEntryToday ? (
+                  <div className="text-green-600 text-sm leading-relaxed">
+                    ✓ You've already written your entry for today.
+                  </div>
+                ) : (
+                  <div className="text-gray-600 text-sm leading-relaxed relative">
+                    <span className="hover:bg-gradient-to-r hover:from-gray-600 hover:via-gray-400 hover:to-gray-600 hover:bg-clip-text hover:text-transparent transition-all duration-300">
+                      "What challenged your patience today?"
+                    </span>
+                  </div>
+                )}
               </div>
               
               {/* Expandable content */}
@@ -254,7 +299,7 @@ const Dashboard = () => {
                 </div>
               </div>
               
-              {!isJournalExpanded && (
+              {!isJournalExpanded && !hasEntryToday && !checkingEntry && (
                 <Button 
                   onClick={() => setIsJournalExpanded(true)}
                   variant="outline" 
