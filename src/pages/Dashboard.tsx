@@ -14,8 +14,8 @@ import { VirtueTracker } from "@/components/VirtueTracker";
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { user, signOut, loading: authLoading } = useAuth();
-  const { subscribed, loading: subscriptionLoading } = useSubscription();
+  const { user, session, signOut, loading: authLoading } = useAuth();
+  const { subscribed, loading: subscriptionLoading, createCheckout } = useSubscription();
   const [animateCards, setAnimateCards] = useState(false);
   const [typingDots, setTypingDots] = useState('');
 
@@ -200,20 +200,7 @@ const Dashboard = () => {
 
   const handleUpgrade = async () => {
     try {
-      const headers: Record<string, string> = {};
-      if (user) {
-        headers.Authorization = `Bearer ${user.access_token}`;
-      }
-
-      const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: { priceType: 'monthly' },
-        headers,
-      });
-
-      if (error) throw error;
-      
-      // Redirect to Stripe Checkout
-      window.location.href = data.url;
+      await createCheckout('monthly');
     } catch (error) {
       console.error('Error creating checkout:', error);
       toast({
