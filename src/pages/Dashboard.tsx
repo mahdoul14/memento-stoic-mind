@@ -2,10 +2,13 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import { Brain, Clock, BookOpen, Target, LogOut, Home, Lightbulb, Library, User, MessageCircle, TrendingUp } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/components/ui/use-toast";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -14,6 +17,11 @@ const Dashboard = () => {
   const [typingDots, setTypingDots] = useState('');
   const [mementoProgress, setMementoProgress] = useState(0);
   const [virtueAnimations, setVirtueAnimations] = useState([0, 0, 0, 0]);
+
+  // Journal widget state
+  const [isJournalExpanded, setIsJournalExpanded] = useState(false);
+  const [journalText, setJournalText] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
 
   // Redirect to auth if not authenticated
   useEffect(() => {
@@ -83,6 +91,41 @@ const Dashboard = () => {
       return () => clearTimeout(timer);
     }
   }, [animateCards]);
+
+  // Handle journal save
+  const handleSaveJournal = async () => {
+    if (!journalText.trim() || !user) return;
+    
+    setIsSaving(true);
+    try {
+      const { error } = await supabase
+        .from('journal_entries')
+        .insert({
+          user_id: user.id,
+          entry_text: journalText.trim(),
+          date: new Date().toISOString().split('T')[0]
+        });
+
+      if (error) throw error;
+
+      // Success - clear form and show toast
+      setJournalText('');
+      setIsJournalExpanded(false);
+      toast({
+        title: "Saved successfully",
+        description: "Your reflection has been saved.",
+      });
+    } catch (error) {
+      console.error('Error saving journal entry:', error);
+      toast({
+        title: "Error saving",
+        description: "There was a problem saving your reflection. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   // Show loading while checking auth
   if (loading) {
@@ -164,10 +207,10 @@ const Dashboard = () => {
             </CardContent>
           </Card>
 
-          {/* Stoic Journal */}
+          {/* Stoic Journal - Expandable */}
           <Card className={`bg-white rounded-3xl shadow-lg border-0 transition-all duration-700 ease-out hover:shadow-xl hover:-translate-y-1 ${
             animateCards ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
-          }`} style={{ animationDelay: '0.2s' }}>
+          } ${isJournalExpanded ? 'row-span-2' : ''}`} style={{ animationDelay: '0.2s' }}>
             <CardContent className="p-6 relative overflow-hidden">
               <div className="mb-4">
                 <h3 className="text-lg font-bold mb-2">Today's Journal</h3>
@@ -177,13 +220,49 @@ const Dashboard = () => {
                   </span>
                 </div>
               </div>
-              <Button 
-                onClick={() => navigate('/journal')}
-                variant="outline" 
-                className="w-full border-2 border-black text-black hover:bg-black hover:text-white font-medium rounded-full transition-all duration-200 hover:scale-105"
-              >
-                Write Now
-              </Button>
+              
+              {/* Expandable content */}
+              <div className={`transition-all duration-400 ease-out overflow-hidden ${
+                isJournalExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+              }`}>
+                <div className="space-y-4 pt-4">
+                  <Textarea
+                    value={journalText}
+                    onChange={(e) => setJournalText(e.target.value)}
+                    placeholder="Write your thoughts here..."
+                    className="min-h-[120px] resize-none border-gray-200 focus:border-black focus:ring-black"
+                  />
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={handleSaveJournal}
+                      disabled={!journalText.trim() || isSaving}
+                      className="bg-black text-white hover:bg-gray-800 font-medium rounded-full transition-all duration-200 hover:scale-105"
+                    >
+                      {isSaving ? 'Saving...' : 'Save Reflection'}
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        setIsJournalExpanded(false);
+                        setJournalText('');
+                      }}
+                      variant="outline"
+                      className="border-gray-300 text-gray-700 hover:bg-gray-50 rounded-full transition-all duration-200"
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              </div>
+              
+              {!isJournalExpanded && (
+                <Button 
+                  onClick={() => setIsJournalExpanded(true)}
+                  variant="outline" 
+                  className="w-full border-2 border-black text-black hover:bg-black hover:text-white font-medium rounded-full transition-all duration-200 hover:scale-105"
+                >
+                  Write Now
+                </Button>
+              )}
             </CardContent>
           </Card>
         </div>
