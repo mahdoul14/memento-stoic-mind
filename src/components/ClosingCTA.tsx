@@ -1,10 +1,24 @@
 
 import { Button } from "@/components/ui/button";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
-import { Hourglass } from "lucide-react";
+import { useSubscription } from "@/hooks/useSubscription";
+import { useAuth } from "@/hooks/useAuth";
+import { Hourglass, Loader2 } from "lucide-react";
 
 const ClosingCTA = () => {
   const { ref: ctaRef, isVisible: ctaVisible } = useScrollAnimation();
+  const { subscribed, loading, createCheckout } = useSubscription();
+  const { user } = useAuth();
+
+  const handleStartFree = () => {
+    if (subscribed) {
+      // Redirect to dashboard if already subscribed
+      window.location.href = '/dashboard';
+    } else {
+      // Start with monthly subscription
+      createCheckout('monthly');
+    }
+  };
 
   return (
     <section className="bg-white py-24 lg:py-32">
@@ -41,12 +55,17 @@ const ClosingCTA = () => {
           {/* CTA Button */}
           <div className="flex flex-col items-center space-y-3">
             <Button 
-              className="bg-white text-black border border-gray-200 hover:bg-gray-50 hover:scale-105 hover:shadow-xl rounded-full px-12 py-4 text-lg font-inter font-medium group transition-all duration-300 ease-out"
+              onClick={handleStartFree}
+              disabled={loading || !user}
+              className="bg-white text-black border border-gray-200 hover:bg-gray-50 hover:scale-105 hover:shadow-xl rounded-full px-12 py-4 text-lg font-inter font-medium group transition-all duration-300 ease-out disabled:opacity-50"
             >
-              Start Free
+              {loading ? (
+                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+              ) : null}
+              {subscribed ? 'Go to Dashboard' : 'Start Free'}
             </Button>
             <p className="text-sm text-gray-500 font-inter">
-              No sign-up needed
+              {!user ? 'Sign in required' : subscribed ? 'Access your tools' : 'No sign-up needed'}
             </p>
           </div>
         </div>
