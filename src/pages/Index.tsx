@@ -1,5 +1,5 @@
 
-import Header from "@/components/Header";
+import { NavBarDemo } from "@/components/NavBarDemo";
 import Hero from "@/components/Hero";
 import ToolsShowcase from "@/components/ToolsShowcase";
 import ChatPreview from "@/components/ChatPreview";
@@ -10,7 +10,7 @@ import Footer from "@/components/Footer";
 const Index = () => {
   return (
     <div className="min-h-screen bg-white font-inter">
-      <Header />
+      <NavBarDemo />
       <Hero />
       <ToolsShowcase />
       <ChatPreview />
