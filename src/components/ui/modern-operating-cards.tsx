@@ -63,7 +63,7 @@ const ModernOperatingCards: React.FC = () => {
       scale: 1,
       transition: {
         duration: 0.6,
-        ease: [0.25, 0.25, 0.25, 0.75]
+        ease: "easeOut"
       }
     }
   };
