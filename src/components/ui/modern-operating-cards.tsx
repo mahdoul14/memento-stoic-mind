@@ -8,6 +8,7 @@ import { Brain, Globe, Zap, Shield } from 'lucide-react';
 interface CardData {
   title: string;
   description: string;
+  tagline: string;
   icon: React.ComponentType<{ className?: string }>;
   gradient: string;
 }
@@ -15,24 +16,28 @@ interface CardData {
 const cardData: CardData[] = [
   {
     title: "MarcusGPT",
+    tagline: "Converse with ancient wisdom. Get modern clarity.",
     description: "Ask life's hardest questions. Get answers from the Stoics. Built with GPT-4, fine-tuned to think like Marcus Aurelius.",
     icon: Brain,
     gradient: "from-blue-500/20 to-cyan-500/20"
   },
   {
     title: "Memento Mori",
+    tagline: "A visual reminder of your mortality — and your purpose.",
     description: "Track your life in weeks. Each dot reminds you to live with urgency, intention, and grace.",
     icon: Globe,
     gradient: "from-purple-500/20 to-pink-500/20"
   },
   {
     title: "Stoic Journal",
+    tagline: "Reflect. Accept. Improve.",
     description: "Capture your thoughts each day. Practice morning intention and evening reflection, just like the Stoics.",
     icon: Zap,
     gradient: "from-amber-500/20 to-orange-500/20"
   },
   {
     title: "Virtue Tracker",
+    tagline: "Measure yourself by what matters.",
     description: "Daily reflections on courage, temperance, wisdom, and justice. Let your actions show your growth.",
     icon: Shield,
     gradient: "from-emerald-500/20 to-teal-500/20"
@@ -63,7 +68,9 @@ const ModernOperatingCards: React.FC = () => {
       scale: 1,
       transition: {
         duration: 0.6,
-        ease: "easeOut"
+        type: "spring",
+        stiffness: 100,
+        damping: 15
       }
     }
   };
@@ -83,7 +90,7 @@ const ModernOperatingCards: React.FC = () => {
           whileHover={{ 
             scale: 1.02,
             y: -5,
-            transition: { duration: 0.3, ease: "easeOut" }
+            transition: { duration: 0.3, type: "spring", stiffness: 400 }
           }}
           className="group relative"
         >
@@ -100,6 +107,11 @@ const ModernOperatingCards: React.FC = () => {
                   <card.icon className="w-8 h-8 text-gray-700" />
                 </div>
               </div>
+
+              {/* Tagline */}
+              <p className="text-sm font-medium text-gray-500 mb-2 group-hover:text-gray-600 transition-colors duration-300">
+                {card.tagline}
+              </p>
 
               {/* Title */}
               <h3 className="text-2xl font-bold text-gray-900 mb-4 group-hover:text-gray-800 transition-colors duration-300">
