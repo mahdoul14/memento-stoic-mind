@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 
@@ -10,41 +11,29 @@ const ToolsShowcase = () => {
       id: "marcusgpt",
       name: "MarcusGPT",
       emoji: "🧠",
-      description: "Chat with Marcus Aurelius.",
-      features: [
-        "• Powered by GPT-4",
-        "• Inspired by Meditations"
-      ]
+      tagline: "Converse with ancient wisdom. Get modern clarity.",
+      description: "Ask life's hardest questions. Get answers from the Stoics. Built with GPT-4, fine-tuned to think like Marcus Aurelius."
     },
     {
       id: "memento",
       name: "Memento Mori",
       emoji: "⌛",
-      description: "Your weekly countdown.",
-      features: [
-        "• 4000 dot life grid",
-        "• Weekly reflection built-in"
-      ]
+      tagline: "A visual reminder of your mortality — and your purpose.",
+      description: "Track your life in weeks. Each dot reminds you to live with urgency, intention, and grace."
     },
     {
       id: "journal",
       name: "Stoic Journal", 
       emoji: "📓",
-      description: "Reflect and write.",
-      features: [
-        "• Guided prompts",
-        "• Private daily entries"
-      ]
+      tagline: "Reflect. Accept. Improve.",
+      description: "Capture your thoughts each day. Practice morning intention and evening reflection, just like the Stoics."
     },
     {
       id: "tracker",
       name: "Virtue Tracker",
       emoji: "⚖️",
-      description: "Log daily Stoic virtues.",
-      features: [
-        "• Track justice, courage, wisdom",
-        "• Rate yourself daily"
-      ]
+      tagline: "Measure yourself by what matters.",
+      description: "Daily reflections on courage, temperance, wisdom, and justice. Let your actions show your growth."
     }
   ];
 
@@ -75,37 +64,38 @@ const ToolsShowcase = () => {
           {tools.map((tool, index) => (
             <div 
               key={tool.id}
-              className="group bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300 cursor-pointer"
+              className={`group bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-500 cursor-pointer ${
+                sectionVisible 
+                  ? 'opacity-100 translate-y-0' 
+                  : 'opacity-0 translate-y-8'
+              }`}
               style={{ 
-                transitionDelay: sectionVisible ? `${index * 100 + 300}ms` : '0ms'
+                transitionDelay: sectionVisible ? `${index * 150 + 300}ms` : '0ms'
               }}
               onMouseEnter={() => setHoveredCard(tool.id)}
               onMouseLeave={() => setHoveredCard(null)}
             >
               <div className="text-center mb-6">
-                <div className="text-4xl mb-4">{tool.emoji}</div>
-                <h3 className="font-inter font-bold text-2xl text-black mb-2 tracking-tight">
+                <div className="text-4xl mb-4 transition-transform duration-300 group-hover:scale-110">
+                  {tool.emoji}
+                </div>
+                <p className="font-inter text-sm italic text-gray-500 mb-3 leading-relaxed">
+                  {tool.tagline}
+                </p>
+                <h3 className="font-inter font-bold text-2xl text-black mb-4 tracking-tight">
                   {tool.name}
                 </h3>
-                <p className="font-inter text-lg text-gray-600">
+                <p className="font-inter text-base text-gray-600 leading-relaxed">
                   {tool.description}
                 </p>
               </div>
               
-              {/* Features list - shows on hover */}
-              <div className={`transition-all duration-300 overflow-hidden ${
+              {/* Subtle hover indicator */}
+              <div className={`w-full h-0.5 bg-gradient-to-r from-transparent via-black to-transparent transition-all duration-300 ${
                 hoveredCard === tool.id 
-                  ? 'max-h-24 opacity-100' 
-                  : 'max-h-0 opacity-0'
-              }`}>
-                <div className="pt-4 border-t border-gray-100">
-                  {tool.features.map((feature, featureIndex) => (
-                    <p key={featureIndex} className="font-inter text-sm text-gray-500 leading-relaxed mb-1">
-                      {feature}
-                    </p>
-                  ))}
-                </div>
-              </div>
+                  ? 'opacity-20 scale-x-100' 
+                  : 'opacity-0 scale-x-0'
+              }`} />
             </div>
           ))}
         </div>
