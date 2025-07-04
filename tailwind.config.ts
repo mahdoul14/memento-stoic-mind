@@ -22,6 +22,9 @@ export default {
 			fontFamily: {
 				'inter': ['Inter', 'sans-serif'],
 			},
+			gridTemplateColumns: {
+				'80': 'repeat(80, minmax(0, 1fr))',
+			},
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
