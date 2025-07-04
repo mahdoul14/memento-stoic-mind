@@ -6,7 +6,7 @@ import { useAuth } from "@/hooks/useAuth"
 import { useNavigate } from "react-router-dom"
 
 export function NavBarDemo() {
-  const { user, signInWithGoogle } = useAuth()
+  const { user } = useAuth()
   const navigate = useNavigate()
 
   const navItems = [
@@ -15,11 +15,11 @@ export function NavBarDemo() {
     { name: 'Pricing', url: '#pricing', icon: DollarSign }
   ]
 
-  const handleDashboardClick = async () => {
+  const handleAuthClick = () => {
     if (user) {
       navigate('/dashboard')
     } else {
-      await signInWithGoogle()
+      navigate('/auth')
     }
   }
 
@@ -28,10 +28,10 @@ export function NavBarDemo() {
       <NavBar items={navItems} />
       <div className="fixed top-6 right-6 z-50">
         <Button
-          onClick={handleDashboardClick}
+          onClick={handleAuthClick}
           className="bg-black text-white font-semibold px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors"
         >
-          Go to Dashboard →
+          {user ? 'Go to Dashboard' : 'Sign In'} →
         </Button>
       </div>
     </div>
