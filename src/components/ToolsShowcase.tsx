@@ -1,8 +1,9 @@
-
 import { useState } from "react";
+import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 
 const ToolsShowcase = () => {
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
+  const { ref: sectionRef, isVisible: sectionVisible } = useScrollAnimation();
 
   const tools = [
     {
@@ -50,7 +51,14 @@ const ToolsShowcase = () => {
   return (
     <section id="tools" className="bg-white py-24 lg:py-32">
       <div className="container mx-auto px-6 max-w-6xl">
-        <div className="text-center mb-16 animate-fade-in">
+        <div 
+          ref={sectionRef}
+          className={`text-center mb-16 transition-all duration-700 ease-out ${
+            sectionVisible 
+              ? 'opacity-100 translate-y-0' 
+              : 'opacity-0 translate-y-6'
+          }`}
+        >
           <h2 className="font-inter font-bold text-4xl lg:text-5xl text-black mb-4 tracking-tight">
             Explore the Tools
           </h2>
@@ -59,12 +67,18 @@ const ToolsShowcase = () => {
           </p>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-fade-in" style={{ animationDelay: '0.2s' }}>
+        <div className={`grid grid-cols-1 md:grid-cols-2 gap-8 transition-all duration-700 ease-out delay-200 ${
+          sectionVisible 
+            ? 'opacity-100 translate-y-0' 
+            : 'opacity-0 translate-y-6'
+        }`}>
           {tools.map((tool, index) => (
             <div 
               key={tool.id}
-              className="group bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer hover:scale-[1.02] animate-fade-in"
-              style={{ animationDelay: `${index * 0.1}s` }}
+              className="group bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300 cursor-pointer"
+              style={{ 
+                transitionDelay: sectionVisible ? `${index * 100 + 300}ms` : '0ms'
+              }}
               onMouseEnter={() => setHoveredCard(tool.id)}
               onMouseLeave={() => setHoveredCard(null)}
             >

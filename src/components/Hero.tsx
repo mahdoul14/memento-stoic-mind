@@ -1,8 +1,11 @@
-
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
+import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 
 const Hero = () => {
+  const { ref: leftPhoneRef, isVisible: leftPhoneVisible } = useScrollAnimation();
+  const { ref: rightPhoneRef, isVisible: rightPhoneVisible } = useScrollAnimation();
+
   return (
     <section className="bg-white py-24 lg:py-32">
       <div className="container mx-auto px-6 text-center">
@@ -14,7 +17,7 @@ const Hero = () => {
             A calm AI dashboard for discipline, clarity, and reflection.
           </p>
           
-          <Button className="bg-black text-white hover:bg-gray-800 rounded-full px-8 py-4 text-lg font-inter font-medium mb-16 group">
+          <Button className="bg-black text-white hover:bg-gray-800 hover:scale-105 hover:shadow-lg rounded-full px-8 py-4 text-lg font-inter font-medium mb-16 group transition-all duration-200 ease-in-out">
             Enter the Temple
             <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
           </Button>
@@ -22,7 +25,14 @@ const Hero = () => {
         
         <div className="flex flex-col lg:flex-row gap-12 justify-center items-center max-w-5xl mx-auto">
           {/* Phone 1 - MarcusGPT */}
-          <div className="relative animate-fade-in" style={{ animationDelay: '0.3s' }}>
+          <div 
+            ref={leftPhoneRef}
+            className={`relative transition-all duration-700 ease-out delay-300 ${
+              leftPhoneVisible 
+                ? 'opacity-100 translate-y-0' 
+                : 'opacity-0 translate-y-8'
+            }`}
+          >
             <div className="w-72 h-[580px] bg-black rounded-[2.5rem] p-2 transform perspective-1000 rotate-y-[-12deg] rotate-x-[8deg] shadow-2xl">
               <div className="w-full h-full bg-white rounded-[2rem] overflow-hidden flex flex-col">
                 {/* Status Bar */}
@@ -70,7 +80,14 @@ const Hero = () => {
           </div>
           
           {/* Phone 2 - Memento Mori */}
-          <div className="relative animate-fade-in" style={{ animationDelay: '0.6s' }}>
+          <div 
+            ref={rightPhoneRef}
+            className={`relative transition-all duration-700 ease-out delay-[450ms] ${
+              rightPhoneVisible 
+                ? 'opacity-100 translate-y-0' 
+                : 'opacity-0 translate-y-8'
+            }`}
+          >
             <div className="w-72 h-[580px] bg-black rounded-[2.5rem] p-2 transform perspective-1000 rotate-y-[12deg] rotate-x-[8deg] shadow-2xl">
               <div className="w-full h-full bg-white rounded-[2rem] overflow-hidden flex flex-col">
                 {/* Status Bar */}
