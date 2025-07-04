@@ -4,20 +4,18 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Progress } from "@/components/ui/progress";
-import { Brain, Clock, BookOpen, Target, LogOut, Home, Lightbulb, Library, User, MessageCircle, TrendingUp } from "lucide-react";
+import { Clock, Lightbulb, Library, User, MessageCircle, TrendingUp, LogOut, Home } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
+import { BirthYearForm } from "@/components/BirthYearForm";
+import { MementoMoriGrid } from "@/components/MementoMoriGrid";
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const { user, signOut, loading } = useAuth();
   const [animateCards, setAnimateCards] = useState(false);
   const [typingDots, setTypingDots] = useState('');
-  const [mementoProgress, setMementoProgress] = useState(0);
-  const [virtueAnimations, setVirtueAnimations] = useState([0, 0, 0, 0]);
 
   // Journal widget state
   const [isJournalExpanded, setIsJournalExpanded] = useState(false);
@@ -30,7 +28,6 @@ const Dashboard = () => {
   const [birthYear, setBirthYear] = useState<number | null>(null);
   const [age, setAge] = useState(0);
   const [loadingProfile, setLoadingProfile] = useState(true);
-  const [filledDots, setFilledDots] = useState(0);
 
   // Redirect to auth if not authenticated
   useEffect(() => {
@@ -122,50 +119,6 @@ const Dashboard = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Animate dots filling for Memento Mori
-  useEffect(() => {
-    if (animateCards && birthYear && age > 0) {
-      const timer = setTimeout(() => {
-        const interval = setInterval(() => {
-          setFilledDots(prev => {
-            if (prev >= age) {
-              clearInterval(interval);
-              return age;
-            }
-            return prev + 1;
-          });
-        }, 30);
-        return () => clearInterval(interval);
-      }, 1500);
-      return () => clearTimeout(timer);
-    }
-  }, [animateCards, birthYear, age]);
-
-  // Virtue tracker animations
-  useEffect(() => {
-    if (animateCards) {
-      const virtueTargets = [75, 82, 90, 68];
-      const timer = setTimeout(() => {
-        virtueTargets.forEach((target, index) => {
-          setTimeout(() => {
-            const interval = setInterval(() => {
-              setVirtueAnimations(prev => {
-                const newValues = [...prev];
-                if (newValues[index] >= target) {
-                  clearInterval(interval);
-                  return newValues;
-                }
-                newValues[index] += 2;
-                return newValues;
-              });
-            }, 30);
-          }, index * 200);
-        });
-      }, 1500);
-      return () => clearTimeout(timer);
-    }
-  }, [animateCards]);
-
   // Handle journal save
   const handleSaveJournal = async () => {
     if (!journalText.trim() || !user) return;
@@ -182,7 +135,6 @@ const Dashboard = () => {
 
       if (error) throw error;
 
-      // Success - clear form and show toast
       setJournalText('');
       setIsJournalExpanded(false);
       setHasEntryToday(true);
@@ -202,6 +154,13 @@ const Dashboard = () => {
     }
   };
 
+  const handleBirthYearSaved = (year: number) => {
+    setBirthYear(year);
+    const currentYear = new Date().getFullYear();
+    const calculatedAge = currentYear - year;
+    setAge(calculatedAge);
+  };
+
   // Show loading while checking auth
   if (loading) {
     return (
@@ -217,10 +176,10 @@ const Dashboard = () => {
   }
 
   const virtues = [
-    { name: "Courage", icon: "🛡️", progress: virtueAnimations[0], streak: 5 },
-    { name: "Wisdom", icon: "🧠", progress: virtueAnimations[1], streak: 3 },
-    { name: "Justice", icon: "⚖️", progress: virtueAnimations[2], streak: 7 },
-    { name: "Temperance", icon: "🌿", progress: virtueAnimations[3], streak: 2 }
+    { name: "Courage", icon: "🛡️", streak: 5 },
+    { name: "Wisdom", icon: "🧠", streak: 3 },
+    { name: "Justice", icon: "⚖️", streak: 7 },
+    { name: "Temperance", icon: "🌿", streak: 2 }
   ];
 
   const dailyQuote = {
@@ -415,44 +374,14 @@ const Dashboard = () => {
             {loadingProfile ? (
               <div className="text-gray-500 text-sm">Loading your timeline...</div>
             ) : !birthYear ? (
-              <div className="text-gray-500 text-sm">Enter your birth year to view your timeline.</div>
-            ) : (
-              <div>
-                <div className="mb-4 text-center">
-                  <div className="text-2xl font-bold text-black">{age}</div>
-                  <div className="text-sm text-gray-500">years lived</div>
+              <div className="space-y-4">
+                <div className="text-gray-500 text-sm text-center mb-4">
+                  Enter your birth year to view your timeline.
                 </div>
-                
-                {/* 10x10 Grid of Dots */}
-                <div className="grid grid-cols-10 gap-1 justify-center max-w-[200px] mx-auto mb-4">
-                  {[...Array(100)].map((_, index) => {
-                    const yearNumber = index + 1;
-                    const isFilled = index < filledDots;
-                    const isCurrentYear = index === age - 1;
-                    
-                    return (
-                      <div
-                        key={index}
-                        className={`w-4 h-4 rounded-full border transition-all duration-200 hover:scale-125 cursor-pointer ${
-                          isFilled 
-                            ? isCurrentYear 
-                              ? 'bg-red-500 border-red-600' 
-                              : 'bg-black border-black'
-                            : 'bg-gray-100 border-gray-300 hover:bg-gray-200'
-                        }`}
-                        title={`Year ${yearNumber}: Age ${yearNumber - 1}`}
-                        style={{
-                          transitionDelay: `${index * 10}ms`
-                        }}
-                      />
-                    );
-                  })}
-                </div>
-                
-                <div className="text-center text-xs text-gray-500">
-                  {100 - age} years remaining (assuming 100 year lifespan)
-                </div>
+                <BirthYearForm userId={user.id} onBirthYearSaved={handleBirthYearSaved} />
               </div>
+            ) : (
+              <MementoMoriGrid age={age} />
             )}
           </CardContent>
         </Card>
