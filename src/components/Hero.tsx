@@ -19,11 +19,14 @@ const Hero = () => {
               : 'opacity-0 translate-y-8'
           }`}
         >
-          <h1 className="font-inter font-bold text-5xl lg:text-7xl text-black mb-6 tracking-tight">
+          <h1 className="font-inter font-bold text-5xl lg:text-7xl text-black mb-4 tracking-tight">
             Become Stoic in the Age of Distraction
           </h1>
-          <p className="font-inter text-lg text-gray-500 mb-12 max-w-2xl mx-auto">
-            A calm AI dashboard for discipline, clarity, and reflection.
+          <p className="font-inter text-xl text-gray-700 mb-2 max-w-2xl mx-auto">
+            A modern AI App for discipline, clarity, and reflection
+          </p>
+          <p className="font-serif text-lg text-gray-500 mb-12 max-w-2xl mx-auto italic">
+            Influenced by the great minds
           </p>
           
           <Button className="bg-black text-white hover:bg-gray-800 hover:scale-105 hover:shadow-lg rounded-full px-8 py-4 text-lg font-inter font-medium mb-16 group transition-all duration-200 ease-in-out">
