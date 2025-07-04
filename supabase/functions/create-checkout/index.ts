@@ -84,39 +84,31 @@ serve(async (req) => {
     const origin = req.headers.get("origin") || "http://localhost:3000";
     let sessionConfig;
 
-    // Map priceType to actual Stripe product IDs
-    let stripeProductId;
+    // Map priceType to actual Stripe Price IDs
+    let stripePriceId;
     let mode = "subscription";
 
     if (priceType === 'monthly') {
-      stripeProductId = "prod_ScQx7NIRno1qid"; // £9/month
+      stripePriceId = "price_1RhC5sRXLe0RB4dyrCmaHglP"; // £9/month
       mode = "subscription";
     } else if (priceType === 'lifetime') {
-      stripeProductId = "prod_ScQxRn7u0bDsBg"; // £79 one-time
+      stripePriceId = "price_1RhC5PRXLe0RB4dy7iquDzVO"; // £79.99 one-time
       mode = "payment";
     } else if (productId) {
-      // If productId is provided directly, use it
-      stripeProductId = productId;
+      // If productId is provided directly, use it (assuming it's a price ID)
+      stripePriceId = productId;
       mode = "subscription"; // Default, but could be overridden
     } else {
       throw new Error("Invalid price type or product ID");
     }
 
-    logStep("Using Stripe product", { productId: stripeProductId, mode });
-
-    // Get the product and its default price
-    const product = await stripe.products.retrieve(stripeProductId);
-    if (!product.default_price) {
-      throw new Error(`Product ${stripeProductId} has no default price`);
-    }
-
-    logStep("Retrieved product", { name: product.name, defaultPrice: product.default_price });
+    logStep("Using Stripe price", { priceId: stripePriceId, mode });
 
     sessionConfig = {
       customer: customerId,
       customer_email: customerId ? undefined : customerEmail,
       line_items: [{
-        price: product.default_price as string,
+        price: stripePriceId,
         quantity: 1,
       }],
       mode: mode as "subscription" | "payment",
