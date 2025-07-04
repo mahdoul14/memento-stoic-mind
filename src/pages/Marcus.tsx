@@ -1,10 +1,9 @@
-
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { ArrowLeft, Settings } from "lucide-react";
+import { ArrowLeft, Settings, ChevronDown, Check } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -19,6 +18,8 @@ interface Message {
 const Marcus = () => {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
+  const [isAccordionOpen, setIsAccordionOpen] = useState(false);
+  
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
@@ -324,6 +325,95 @@ const Marcus = () => {
           </div>
         </motion.div>
       </div>
+
+      {/* Memento Mori AI Accordion Section */}
+      <motion.div 
+        className="bg-white border-t border-stone-200/40 relative z-10"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.6, delay: 0.6 }}
+      >
+        <div className="max-w-4xl mx-auto px-6">
+          <motion.button
+            onClick={() => setIsAccordionOpen(!isAccordionOpen)}
+            className="w-full flex items-center justify-between py-8 text-left hover:bg-stone-50/40 transition-colors duration-200 group"
+            whileHover={{ scale: 1.001 }}
+            transition={{ duration: 0.2 }}
+          >
+            <h2 className="text-xl font-semibold text-stone-800 group-hover:text-stone-900 transition-colors">
+              What is Memento Mori AI?
+            </h2>
+            <motion.div
+              animate={{ rotate: isAccordionOpen ? 180 : 0 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+            >
+              <ChevronDown size={24} className="text-stone-600 group-hover:text-stone-800 transition-colors" />
+            </motion.div>
+          </motion.button>
+
+          <AnimatePresence>
+            {isAccordionOpen && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.4, ease: "easeInOut" }}
+                className="overflow-hidden"
+              >
+                <div className="pb-12 px-2">
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.1 }}
+                    className="mb-8"
+                  >
+                    <h3 className="text-3xl font-bold text-stone-900 mb-6 font-serif">
+                      Built with AI. Trained on Wisdom.
+                    </h3>
+                    <motion.p 
+                      className="text-lg text-stone-700 leading-relaxed mb-8 font-inter"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5, delay: 0.2 }}
+                    >
+                      Memento isn't just another app — it's a quiet thinking partner, trained on the writings of Marcus Aurelius, Seneca, and Epictetus.<br />
+                      Powered by GPT-4, it helps you reflect deeply, respond wisely, and move through life with intention.<br />
+                      No fluff. No noise. Just timeless clarity — when you need it most.
+                    </motion.p>
+                  </motion.div>
+
+                  <motion.div 
+                    className="grid gap-4"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.3 }}
+                  >
+                    {[
+                      "Ask better questions, get Stoic answers",
+                      "Stay calm and focused in modern chaos", 
+                      "Turn reflection into a daily habit",
+                      "AI-powered clarity, grounded in ancient wisdom"
+                    ].map((benefit, index) => (
+                      <motion.div
+                        key={index}
+                        className="flex items-center gap-4"
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.4, delay: 0.4 + index * 0.1 }}
+                      >
+                        <div className="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                          <Check size={14} className="text-emerald-600" />
+                        </div>
+                        <span className="text-stone-700 font-medium">{benefit}</span>
+                      </motion.div>
+                    ))}
+                  </motion.div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </motion.div>
     </motion.div>
   );
 };
