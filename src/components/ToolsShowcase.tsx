@@ -1,82 +1,96 @@
 
+import { useState } from "react";
+
 const ToolsShowcase = () => {
+  const [hoveredCard, setHoveredCard] = useState<string | null>(null);
+
   const tools = [
     {
+      id: "marcusgpt",
       name: "MarcusGPT",
-      description: "Talk with Marcus Aurelius via GPT-4.",
+      emoji: "🧠",
+      description: "Chat with Marcus Aurelius.",
       features: [
-        "Ask questions about life, death, virtue",
-        "Daily quote & reflection from Meditations",
-        "Personalized guidance from a Stoic lens"
+        "• Powered by GPT-4",
+        "• Inspired by Meditations"
       ]
     },
     {
+      id: "memento",
       name: "Memento Mori",
-      description: "A countdown reminding you that time is finite.",
+      emoji: "⌛",
+      description: "Your weekly countdown.",
       features: [
-        "Track days left using your birthdate",
-        "Animates gently to reinforce awareness",
-        "Designed to reflect Stoic mortality themes"
+        "• 4000 dot life grid",
+        "• Weekly reflection built-in"
       ]
     },
     {
+      id: "journal",
       name: "Stoic Journal", 
-      description: "Daily reflection prompts and private writing space.",
+      emoji: "📓",
+      description: "Reflect and write.",
       features: [
-        "Morning and evening reflection prompts",
-        "Private, autosaving writing space",
-        "Minimal, calming UI for focus"
+        "• Guided prompts",
+        "• Private daily entries"
       ]
     },
     {
+      id: "tracker",
       name: "Virtue Tracker",
-      description: "Measure courage, wisdom, justice, temperance.",
+      emoji: "⚖️",
+      description: "Log daily Stoic virtues.",
       features: [
-        "Log actions for each core Stoic virtue",
-        "Weekly visual summaries",
-        "Built to encourage personal accountability"
+        "• Track justice, courage, wisdom",
+        "• Rate yourself daily"
       ]
     }
   ];
 
   return (
     <section id="tools" className="bg-white py-24 lg:py-32">
-      <div className="container mx-auto px-6 max-w-7xl">
-        <div className="text-center mb-20">
-          <h2 className="font-inter font-bold text-5xl lg:text-6xl text-black mb-6 tracking-tight">
+      <div className="container mx-auto px-6 max-w-6xl">
+        <div className="text-center mb-16 animate-fade-in">
+          <h2 className="font-inter font-bold text-4xl lg:text-5xl text-black mb-4 tracking-tight">
             Explore the Tools
           </h2>
+          <p className="font-inter text-xl text-gray-600">
+            Each one designed to deepen your practice
+          </p>
         </div>
         
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-fade-in" style={{ animationDelay: '0.2s' }}>
           {tools.map((tool, index) => (
             <div 
-              key={tool.name}
-              className="group bg-white p-12 rounded-3xl shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out animate-fade-in"
+              key={tool.id}
+              className="group bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer hover:scale-[1.02] animate-fade-in"
               style={{ animationDelay: `${index * 0.1}s` }}
+              onMouseEnter={() => setHoveredCard(tool.id)}
+              onMouseLeave={() => setHoveredCard(null)}
             >
-              <h3 className="font-inter font-bold text-3xl text-black mb-4 tracking-tight">
-                {tool.name}
-              </h3>
-              <p className="font-inter text-xl text-gray-600 mb-6 leading-relaxed">
-                {tool.description}
-              </p>
+              <div className="text-center mb-6">
+                <div className="text-4xl mb-4">{tool.emoji}</div>
+                <h3 className="font-inter font-bold text-2xl text-black mb-2 tracking-tight">
+                  {tool.name}
+                </h3>
+                <p className="font-inter text-lg text-gray-600">
+                  {tool.description}
+                </p>
+              </div>
               
-              <div className="opacity-0 group-hover:opacity-100 transition-all duration-300 ease-in-out transform translate-y-2 group-hover:translate-y-0">
-                <ul className="space-y-3">
+              {/* Features list - shows on hover */}
+              <div className={`transition-all duration-300 overflow-hidden ${
+                hoveredCard === tool.id 
+                  ? 'max-h-24 opacity-100' 
+                  : 'max-h-0 opacity-0'
+              }`}>
+                <div className="pt-4 border-t border-gray-100">
                   {tool.features.map((feature, featureIndex) => (
-                    <li 
-                      key={featureIndex}
-                      className="font-inter text-lg text-gray-500 flex items-start"
-                      style={{ 
-                        transitionDelay: `${featureIndex * 50}ms` 
-                      }}
-                    >
-                      <span className="text-black mr-3 font-medium">•</span>
+                    <p key={featureIndex} className="font-inter text-sm text-gray-500 leading-relaxed mb-1">
                       {feature}
-                    </li>
+                    </p>
                   ))}
-                </ul>
+                </div>
               </div>
             </div>
           ))}
