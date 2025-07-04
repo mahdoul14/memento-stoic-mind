@@ -2,11 +2,35 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
-import { Brain, Clock, BookOpen, Target } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Brain, Clock, BookOpen, Target, LogOut } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const { user, signOut, loading } = useAuth();
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
+
+  // Redirect to home if not authenticated
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate('/');
+    }
+  }, [user, loading, navigate]);
+
+  // Show loading while checking auth
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-lg text-gray-600">Loading...</div>
+      </div>
+    );
+  }
+
+  // Don't render if not authenticated
+  if (!user) {
+    return null;
+  }
 
   // Calculate filled dots based on age (example: 25 years old)
   const currentAge = 25;
@@ -51,6 +75,18 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-white">
+      {/* Sign out button */}
+      <div className="fixed top-6 right-6 z-50">
+        <Button
+          onClick={signOut}
+          variant="outline"
+          className="flex items-center gap-2"
+        >
+          <LogOut size={16} />
+          Sign Out
+        </Button>
+      </div>
+
       <div className="container mx-auto px-6 py-12">
         {/* Top Section */}
         <div className="mb-16 animate-fade-in">
