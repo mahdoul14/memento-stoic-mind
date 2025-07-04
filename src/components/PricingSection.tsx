@@ -45,6 +45,8 @@ const PricingSection = () => {
     } else {
       // Create checkout (no auth required)
       try {
+        console.log('Creating checkout for:', priceType);
+        
         const headers: Record<string, string> = {};
         if (user && session) {
           headers.Authorization = `Bearer ${session.access_token}`;
@@ -55,13 +57,22 @@ const PricingSection = () => {
           headers,
         });
 
-        if (error) throw error;
+        if (error) {
+          console.error('Supabase function error:', error);
+          throw error;
+        }
+        
+        if (!data?.url) {
+          throw new Error('No checkout URL received');
+        }
+        
+        console.log('Checkout URL received:', data.url);
         window.open(data.url, '_blank');
       } catch (error) {
         console.error('Error creating checkout:', error);
         toast({
           title: "Error",
-          description: "Failed to create checkout session",
+          description: "Failed to create checkout session. Please try again.",
           variant: "destructive",
         });
       }
@@ -114,6 +125,7 @@ const PricingSection = () => {
               </CardTitle>
             </CardHeader>
             <CardContent className="p-0 space-y-6">
+              
               <ul className="space-y-4">
                 <li className="font-inter text-gray-700 flex items-start">
                   <div className="w-6 h-6 bg-black rounded-full flex items-center justify-center mr-4 mt-0.5 flex-shrink-0">
@@ -184,6 +196,7 @@ const PricingSection = () => {
               </CardTitle>
             </CardHeader>
             <CardContent className="p-0 space-y-6">
+              
               <ul className="space-y-4">
                 <li className="font-inter text-gray-700 flex items-start">
                   <div className="w-6 h-6 bg-black rounded-full flex items-center justify-center mr-4 mt-0.5 flex-shrink-0">

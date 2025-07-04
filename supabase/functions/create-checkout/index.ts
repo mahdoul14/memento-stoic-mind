@@ -18,20 +18,27 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  const supabaseClient = createClient(
-    Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_ANON_KEY") ?? ""
-  );
-
   try {
     logStep("Function started");
+
+    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
+    if (!stripeKey) {
+      logStep("ERROR: STRIPE_SECRET_KEY not found");
+      throw new Error("STRIPE_SECRET_KEY is not set");
+    }
+    logStep("Stripe key verified");
 
     const { priceType } = await req.json();
     logStep("Request received", { priceType });
 
-    // Try to get authenticated user, but don't require it
+    // Try to get authenticated user, but don't require it for checkout
     let user = null;
     let customerEmail = "guest@example.com"; // Default for guest checkout
+    
+    const supabaseClient = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_ANON_KEY") ?? ""
+    );
     
     try {
       const authHeader = req.headers.get("Authorization");
@@ -52,20 +59,26 @@ serve(async (req) => {
       logStep("Proceeding with guest checkout", { email: customerEmail });
     }
 
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", { apiVersion: "2023-10-16" });
+    const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
     
     // Check if customer already exists (only for authenticated users)
     let customerId;
     if (user) {
-      const customers = await stripe.customers.list({ email: user.email, limit: 1 });
-      if (customers.data.length > 0) {
-        customerId = customers.data[0].id;
-        logStep("Existing customer found", { customerId });
+      try {
+        const customers = await stripe.customers.list({ email: user.email, limit: 1 });
+        if (customers.data.length > 0) {
+          customerId = customers.data[0].id;
+          logStep("Existing customer found", { customerId });
+        }
+      } catch (error) {
+        logStep("Error checking existing customer", { error: error.message });
       }
     }
 
     // Define pricing based on your actual product
     let lineItems;
+    let mode = "subscription";
+    
     if (priceType === 'monthly') {
       lineItems = [{
         price_data: {
@@ -77,7 +90,7 @@ serve(async (req) => {
         quantity: 1,
       }];
     } else if (priceType === 'lifetime') {
-      // Use your actual product ID for the lifetime plan
+      // Use your actual product price ID for the lifetime plan
       lineItems = [{
         price: "price_1QQo7zKLl9pHyQy2ScQxRn7u0bDsBg", // Your product price ID
         quantity: 1,
@@ -87,16 +100,21 @@ serve(async (req) => {
     }
 
     const origin = req.headers.get("origin") || "http://localhost:3000";
-    const session = await stripe.checkout.sessions.create({
+    
+    const sessionConfig = {
       customer: customerId,
       customer_email: customerId ? undefined : customerEmail,
       line_items: lineItems,
-      mode: "subscription",
+      mode: mode,
       success_url: `${origin}/?success=true`,
       cancel_url: `${origin}/?canceled=true`,
       allow_promotion_codes: true,
-      billing_address_collection: 'required',
-    });
+      billing_address_collection: 'required' as const,
+    };
+
+    logStep("Creating checkout session", { config: sessionConfig });
+
+    const session = await stripe.checkout.sessions.create(sessionConfig);
 
     logStep("Checkout session created", { sessionId: session.id, url: session.url });
 
@@ -106,8 +124,11 @@ serve(async (req) => {
     });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    logStep("ERROR in create-checkout", { message: errorMessage });
-    return new Response(JSON.stringify({ error: errorMessage }), {
+    logStep("ERROR in create-checkout", { message: errorMessage, stack: error instanceof Error ? error.stack : undefined });
+    return new Response(JSON.stringify({ 
+      error: errorMessage,
+      details: "Check the function logs for more information"
+    }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });
