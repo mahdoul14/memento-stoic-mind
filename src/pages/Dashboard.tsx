@@ -3,13 +3,14 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Brain, Clock, BookOpen, Target, LogOut } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { Brain, Clock, BookOpen, Target, LogOut, Home, Journal, BarChart3, User, MessageCircle, Zap } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const { user, signOut, loading } = useAuth();
-  const [hoveredCard, setHoveredCard] = useState<string | null>(null);
+  const [animateCards, setAnimateCards] = useState(false);
 
   // Redirect to auth if not authenticated
   useEffect(() => {
@@ -19,11 +20,17 @@ const Dashboard = () => {
     }
   }, [user, loading, navigate]);
 
+  // Trigger animations after mount
+  useEffect(() => {
+    const timer = setTimeout(() => setAnimateCards(true), 100);
+    return () => clearTimeout(timer);
+  }, []);
+
   // Show loading while checking auth
   if (loading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-lg text-gray-600">Loading...</div>
+      <div className="min-h-screen bg-[#0B0B0B] flex items-center justify-center">
+        <div className="text-lg text-gray-400">Loading...</div>
       </div>
     );
   }
@@ -33,152 +40,185 @@ const Dashboard = () => {
     return null;
   }
 
-  // Calculate filled dots based on age (example: 25 years old)
-  const currentAge = 25;
-  const weeksPerYear = 52;
-  const totalWeeks = 80 * weeksPerYear; // 4160 weeks in 80 years
-  const filledWeeks = currentAge * weeksPerYear;
-
-  const tools = [
-    {
-      id: "marcusgpt",
-      name: "MarcusGPT",
-      description: "Chat with Marcus Aurelius.",
-      icon: Brain,
-      route: "/gpt",
-      features: ["• GPT-4 answers", "• Inspired by Meditations", "• Stoic wisdom guidance"]
-    },
-    {
-      id: "memento",
-      name: "Memento Mori",
-      description: "Your weekly countdown.",
-      icon: Clock,
-      route: "/memento",
-      features: ["• Visual life timeline", "• Weekly reflections", "• Mortality awareness"]
-    },
-    {
-      id: "journal",
-      name: "Stoic Journal",
-      description: "Reflect and write.",
-      icon: BookOpen,
-      route: "/journal",
-      features: ["• Daily reflections", "• Stoic prompts", "• Private entries"]
-    },
-    {
-      id: "tracker",
-      name: "Virtue Tracker",
-      description: "Log daily Stoic virtues.",
-      icon: Target,
-      route: "/tracker",
-      features: ["• Track wisdom, courage, justice", "• Daily habit building", "• Progress insights"]
-    }
+  const virtues = [
+    { name: "Courage", progress: 75 },
+    { name: "Wisdom", progress: 82 },
+    { name: "Justice", progress: 90 },
+    { name: "Temperance", progress: 68 }
   ];
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Sign out button */}
-      <div className="fixed top-6 right-6 z-50">
+    <div className="min-h-screen bg-[#0B0B0B] text-white font-inter">
+      {/* Header */}
+      <div className="flex justify-between items-center p-6 pb-4">
+        <div>
+          <h1 className="text-2xl font-bold text-white">Dashboard</h1>
+          <p className="text-gray-400 text-sm">Track your daily practice</p>
+        </div>
         <Button
           onClick={() => {
             console.log('Signing out...');
             signOut();
           }}
-          variant="outline"
-          className="flex items-center gap-2"
+          variant="ghost"
+          size="sm"
+          className="text-gray-400 hover:text-white hover:bg-gray-800"
         >
           <LogOut size={16} />
-          Sign Out
         </Button>
       </div>
 
-      <div className="container mx-auto px-6 py-12">
-        {/* Top Section */}
-        <div className="mb-16 animate-fade-in">
-          <h1 className="font-inter font-bold text-4xl text-black mb-3 tracking-tight">
-            Welcome Back
-          </h1>
-          <p className="font-inter text-xl text-gray-600">
-            Track your practice. Access your tools.
-          </p>
-        </div>
-
-        {/* Section 1: Memento Mori Chart */}
-        <div className="mb-20 animate-fade-in" style={{ animationDelay: '0.2s' }}>
-          <div className="bg-gray-50 rounded-3xl p-12 shadow-sm">
-            <div className="max-w-4xl mx-auto">
-              <div className="grid grid-cols-80 gap-1 mb-8">
-                {Array.from({ length: totalWeeks }, (_, index) => (
-                  <div
-                    key={index}
-                    className={`w-2 h-2 rounded-full transition-all duration-200 ${
-                      index < filledWeeks 
-                        ? 'bg-gray-800' 
-                        : 'bg-gray-200 hover:bg-gray-300'
-                    }`}
-                  />
-                ))}
+      {/* Main Content */}
+      <div className="px-6 pb-24 space-y-4">
+        {/* MarcusGPT Widget */}
+        <Card className={`bg-gray-900 border-gray-800 rounded-2xl transition-all duration-700 ease-out ${
+          animateCards ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
+        }`} style={{ animationDelay: '0.1s' }}>
+          <CardContent className="p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-white rounded-lg">
+                <Brain className="w-5 h-5 text-black" />
               </div>
-              <p className="font-inter text-gray-700 text-center text-lg leading-relaxed">
-                Each dot is a week of your life. Make them count.
+              <h3 className="text-lg font-semibold text-white">MarcusGPT</h3>
+            </div>
+            <div className="bg-gray-800 rounded-xl p-4 mb-4">
+              <div className="flex items-start gap-3">
+                <MessageCircle className="w-4 h-4 text-gray-400 mt-1 flex-shrink-0" />
+                <p className="text-gray-300 text-sm leading-relaxed">
+                  "Your task is to practice discipline in all things. Begin each day with purpose..."
+                </p>
+              </div>
+            </div>
+            <Button 
+              onClick={() => navigate('/gpt')}
+              className="w-full bg-white text-black hover:bg-gray-100 font-medium rounded-xl"
+            >
+              Continue Conversation
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Memento Mori Widget */}
+        <Card className={`bg-gray-900 border-gray-800 rounded-2xl transition-all duration-700 ease-out ${
+          animateCards ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
+        }`} style={{ animationDelay: '0.2s' }}>
+          <CardContent className="p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-white rounded-lg">
+                <Clock className="w-5 h-5 text-black" />
+              </div>
+              <h3 className="text-lg font-semibold text-white">Memento Mori</h3>
+            </div>
+            <div className="text-center mb-4">
+              <div className="text-4xl font-bold text-white mb-1">73</div>
+              <p className="text-gray-400 text-sm">Years Left</p>
+            </div>
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-400">Life Progress</span>
+                <span className="text-gray-300">32%</span>
+              </div>
+              <Progress value={32} className="h-2 bg-gray-800" />
+            </div>
+            <Button 
+              onClick={() => navigate('/memento')}
+              variant="outline" 
+              className="w-full mt-4 border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white rounded-xl"
+            >
+              View Timeline
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Stoic Journal Widget */}
+        <Card className={`bg-gray-900 border-gray-800 rounded-2xl transition-all duration-700 ease-out ${
+          animateCards ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
+        }`} style={{ animationDelay: '0.3s' }}>
+          <CardContent className="p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-white rounded-lg">
+                <BookOpen className="w-5 h-5 text-black" />
+              </div>
+              <h3 className="text-lg font-semibold text-white">Stoic Journal</h3>
+            </div>
+            <div className="bg-gray-800 rounded-xl p-4 mb-4">
+              <p className="text-gray-300 text-sm font-medium mb-2">Today's Prompt</p>
+              <p className="text-gray-400 text-sm leading-relaxed">
+                "What tested your temper today, and how did you respond with virtue?"
               </p>
             </div>
-          </div>
-        </div>
+            <Button 
+              onClick={() => navigate('/journal')}
+              className="w-full bg-white text-black hover:bg-gray-100 font-medium rounded-xl"
+            >
+              Write Today's Reflection
+            </Button>
+          </CardContent>
+        </Card>
 
-        {/* Section 2: Stoic Tool Grid */}
-        <div className="animate-fade-in" style={{ animationDelay: '0.4s' }}>
-          <h2 className="font-inter font-bold text-3xl text-black mb-12 text-center tracking-tight">
-            Your Practice Tools
-          </h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-            {tools.map((tool) => {
-              const IconComponent = tool.icon;
-              return (
-                <Card
-                  key={tool.id}
-                  className="group bg-white border-0 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer hover:scale-[1.02]"
-                  onClick={() => {
-                    console.log(`Navigating to ${tool.route}`);
-                    navigate(tool.route);
-                  }}
-                  onMouseEnter={() => setHoveredCard(tool.id)}
-                  onMouseLeave={() => setHoveredCard(null)}
-                >
-                  <CardContent className="p-0">
-                    <div className="flex items-start space-x-4 mb-4">
-                      <div className="p-3 bg-gray-100 rounded-xl group-hover:bg-black group-hover:text-white transition-all duration-300">
-                        <IconComponent className="w-6 h-6" />
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="font-inter font-bold text-xl text-black mb-2">
-                          {tool.name}
-                        </h3>
-                        <p className="font-inter text-gray-600 text-base">
-                          {tool.description}
-                        </p>
-                      </div>
-                    </div>
-                    
-                    {/* Features list - shows on hover */}
-                    <div className={`transition-all duration-300 overflow-hidden ${
-                      hoveredCard === tool.id 
-                        ? 'max-h-32 opacity-100 mt-4' 
-                        : 'max-h-0 opacity-0'
-                    }`}>
-                      <div className="pt-4 border-t border-gray-100">
-                        {tool.features.map((feature, index) => (
-                          <p key={index} className="font-inter text-sm text-gray-500 leading-relaxed">
-                            {feature}
-                          </p>
-                        ))}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
+        {/* Virtue Tracker Widget */}
+        <Card className={`bg-gray-900 border-gray-800 rounded-2xl transition-all duration-700 ease-out ${
+          animateCards ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
+        }`} style={{ animationDelay: '0.4s' }}>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-white rounded-lg">
+                  <Target className="w-5 h-5 text-black" />
+                </div>
+                <h3 className="text-lg font-semibold text-white">Virtue Tracker</h3>
+              </div>
+              <div className="bg-white text-black px-3 py-1 rounded-full text-sm font-bold">
+                Daily Score: 79%
+              </div>
+            </div>
+            <div className="space-y-3">
+              {virtues.map((virtue) => (
+                <div key={virtue.name} className="space-y-1">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-300">{virtue.name}</span>
+                    <span className="text-gray-400">{virtue.progress}%</span>
+                  </div>
+                  <Progress value={virtue.progress} className="h-2 bg-gray-800" />
+                </div>
+              ))}
+            </div>
+            <Button 
+              onClick={() => navigate('/tracker')}
+              variant="outline" 
+              className="w-full mt-4 border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white rounded-xl"
+            >
+              Update Virtues
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Bottom Navigation */}
+      <div className="fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-800 px-6 py-4">
+        <div className="flex justify-between items-center max-w-sm mx-auto">
+          <button className="flex flex-col items-center gap-1 p-2">
+            <Home className="w-5 h-5 text-white" />
+            <span className="text-xs text-white font-medium">Home</span>
+          </button>
+          <button 
+            onClick={() => navigate('/journal')}
+            className="flex flex-col items-center gap-1 p-2"
+          >
+            <BookOpen className="w-5 h-5 text-gray-400" />
+            <span className="text-xs text-gray-400">Journal</span>
+          </button>
+          <button 
+            onClick={() => navigate('/tracker')}
+            className="flex flex-col items-center gap-1 p-2"
+          >
+            <BarChart3 className="w-5 h-5 text-gray-400" />
+            <span className="text-xs text-gray-400">Stats</span>
+          </button>
+          <button className="flex flex-col items-center gap-1 p-2">
+            <User className="w-5 h-5 text-gray-400" />
+            <span className="text-xs text-gray-400">Profile</span>
+          </button>
         </div>
       </div>
     </div>
