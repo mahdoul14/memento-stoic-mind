@@ -1,61 +1,60 @@
-
 import { TestimonialsColumn } from "@/components/ui/testimonials-columns-1";
 import { motion } from "motion/react";
 
 const testimonials = [
   {
-    text: "Memento doesn't push me to hustle. It invites me to reflect. That's something I've needed for a long time.",
-    image: "https://randomuser.me/api/portraits/women/21.jpg",
-    name: "Ava Tran",
+    text: "Honestly? Memento Mori just gets it. I open it instead of TikTok now when I'm feeling overwhelmed.",
+    image: "https://randomuser.me/api/portraits/women/31.jpg",
+    name: "Naomi C.",
+    role: "Student",
+  },
+  {
+    text: "It doesn't try to fix me. It just helps me slow down and think clearly. That's rare.",
+    image: "https://randomuser.me/api/portraits/men/32.jpg",
+    name: "Arjun P.",
     role: "Creative Director",
   },
   {
-    text: "There's something sacred about having a space that slows you down. Memento is that space for me.",
-    image: "https://randomuser.me/api/portraits/men/22.jpg",
-    name: "James Elmi",
-    role: "Founder",
+    text: "I've journaled on and off for years — this is the only app that made it feel natural.",
+    image: "https://randomuser.me/api/portraits/women/33.jpg",
+    name: "Sophie L.",
+    role: "Designer",
   },
   {
-    text: "I've tried every journaling app — this is the only one that actually makes me want to write every day.",
-    image: "https://randomuser.me/api/portraits/women/23.jpg",
-    name: "Zara Mahmoud",
+    text: "The wisdom hits different when you need it most. It's like having Marcus Aurelius in your pocket.",
+    image: "https://randomuser.me/api/portraits/men/34.jpg",
+    name: "Michael K.",
+    role: "Entrepreneur",
+  },
+  {
+    text: "Finally, an app that doesn't make me feel like I'm being sold something. It just... helps.",
+    image: "https://randomuser.me/api/portraits/women/35.jpg",
+    name: "Priya S.",
     role: "Therapist",
   },
   {
-    text: "It feels like an operating system for stillness. Quiet, clear, focused — exactly what I need in this chaos.",
-    image: "https://randomuser.me/api/portraits/men/24.jpg",
-    name: "Leo S.",
-    role: "Product Manager",
+    text: "It's not about productivity or optimization. It's about being human. I love that.",
+    image: "https://randomuser.me/api/portraits/men/36.jpg",
+    name: "David R.",
+    role: "Teacher",
   },
   {
-    text: "Memento has made philosophy practical. I carry Stoicism into my day, not just my thoughts.",
-    image: "https://randomuser.me/api/portraits/women/25.jpg",
-    name: "Yasmin D.",
-    role: "Poet",
-  },
-  {
-    text: "It doesn't gamify reflection. It respects it. That's rare in tech.",
-    image: "https://randomuser.me/api/portraits/women/26.jpg",
-    name: "Chloe Kim",
-    role: "Coach",
-  },
-  {
-    text: "It's not just a tool. It's a companion. It helps me return to myself.",
-    image: "https://randomuser.me/api/portraits/men/27.jpg",
-    name: "Daniel R.",
+    text: "Memento doesn't judge my thoughts — it just holds space for them. That's healing.",
+    image: "https://randomuser.me/api/portraits/women/37.jpg",
+    name: "Elena M.",
     role: "Writer",
   },
   {
-    text: "This app is what journaling should feel like: peaceful, guided, and beautifully human.",
-    image: "https://randomuser.me/api/portraits/women/28.jpg",
-    name: "Maya N.",
-    role: "Psychologist",
+    text: "The daily reflections feel like conversations with my wisest friend. Genuinely life-changing.",
+    image: "https://randomuser.me/api/portraits/men/38.jpg",
+    name: "Carlos V.",
+    role: "Coach",
   },
   {
-    text: "It's rare to find a product that feels like it was made with care. Memento feels like care.",
-    image: "https://randomuser.me/api/portraits/men/29.jpg",
-    name: "Ben C.",
-    role: "Designer",
+    text: "It's the antidote to digital noise. Simple, profound, exactly what I needed without knowing it.",
+    image: "https://randomuser.me/api/portraits/women/39.jpg",
+    name: "Jessica T.",
+    role: "Manager",
   },
 ];
 
