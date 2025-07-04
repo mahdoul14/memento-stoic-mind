@@ -153,7 +153,10 @@ const Dashboard = () => {
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full hover:translate-x-full transition-transform duration-1000 pointer-events-none opacity-0 hover:opacity-100"></div>
               </div>
               <Button 
-                onClick={() => navigate('/marcus')}
+                onClick={() => {
+                  console.log('Navigating to Marcus page...');
+                  navigate('/marcus');
+                }}
                 className="w-full bg-white text-black hover:bg-gray-100 font-medium rounded-full transition-all duration-200 hover:scale-105"
               >
                 Reflect with Marcus

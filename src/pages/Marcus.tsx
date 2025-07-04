@@ -25,9 +25,10 @@ const Marcus = () => {
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Redirect to auth if not authenticated
+  // Only redirect if we're sure there's no user after loading is complete
   useEffect(() => {
     if (!loading && !user) {
+      console.log('No authenticated user, redirecting to auth');
       navigate('/auth');
     }
   }, [user, loading, navigate]);
@@ -41,10 +42,10 @@ const Marcus = () => {
 
   // Focus input on mount
   useEffect(() => {
-    if (inputRef.current) {
+    if (inputRef.current && user) {
       inputRef.current.focus();
     }
-  }, []);
+  }, [user]);
 
   const handleSendMessage = async () => {
     if (!inputValue.trim()) return;
@@ -116,9 +117,13 @@ const Marcus = () => {
     );
   }
 
-  // Don't render if not authenticated
+  // Don't render if not authenticated (will redirect via useEffect)
   if (!user) {
-    return null;
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-lg text-gray-600">Redirecting to login...</div>
+      </div>
+    );
   }
 
   return (
