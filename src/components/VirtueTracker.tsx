@@ -9,17 +9,17 @@ interface VirtueTrackerProps {
 }
 
 const virtues = [
-  { name: "Courage", key: "Courage" as const, icon: "🛡️" },
+  { name: "Courage", key: "courage" as const, icon: "🛡️" },
   { name: "Wisdom", key: "wisdom" as const, icon: "🧠" },
-  { name: "Justice", key: "Justice" as const, icon: "⚖️" },
+  { name: "Justice", key: "justice" as const, icon: "⚖️" },
   { name: "Temperance", key: "temperance" as const, icon: "🌿" }
 ];
 
 export const VirtueTracker = ({ userId }: VirtueTrackerProps) => {
   const [ratings, setRatings] = useState({
-    Courage: 0,
+    courage: 0,
     wisdom: 0,
-    Justice: 0,
+    justice: 0,
     temperance: 0
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -51,9 +51,9 @@ export const VirtueTracker = ({ userId }: VirtueTrackerProps) => {
         .from('virtue_entries')
         .insert({
           user_id: userId,
-          Courage: ratings.Courage,
+          courage: ratings.courage,
           wisdom: ratings.wisdom,
-          Justice: ratings.Justice,
+          justice: ratings.justice,
           temperance: ratings.temperance,
           date: new Date().toISOString().split('T')[0]
         })
@@ -68,9 +68,9 @@ export const VirtueTracker = ({ userId }: VirtueTrackerProps) => {
 
       // Reset ratings after successful submission
       setRatings({
-        Courage: 0,
+        courage: 0,
         wisdom: 0,
-        Justice: 0,
+        justice: 0,
         temperance: 0
       });
 

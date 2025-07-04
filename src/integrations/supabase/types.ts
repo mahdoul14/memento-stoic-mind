@@ -43,7 +43,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
-          id?: string
+          id: string
           message?: string | null
           role?: string | null
           user_id?: string | null
