@@ -4,9 +4,9 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, Send } from "lucide-react";
+import { ArrowLeft, Settings } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface Message {
   id: string;
@@ -19,7 +19,20 @@ interface Message {
 const Marcus = () => {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      id: "1",
+      content: "How do I handle difficult people?",
+      sender: 'user',
+      timestamp: new Date(),
+    },
+    {
+      id: "2",
+      content: "Remember that their actions reflect their character, not yours.\n\nMeet their weakness with your strength, their anger with your patience.\n\nYou cannot control their behavior, only your response to it.",
+      sender: 'marcus',
+      timestamp: new Date(),
+    }
+  ]);
   const [inputValue, setInputValue] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
@@ -65,23 +78,23 @@ const Marcus = () => {
     setTimeout(() => {
       const marcusResponses = [
         {
-          content: "You have power over your mind - not outside events. Realize this, and you will find strength.",
+          content: "You have power over your mind — not outside events.\n\nRealize this, and you will find strength.",
           virtue: "Discipline"
         },
         {
-          content: "The best revenge is not to be like your enemy. Focus on what you can control, and let go of what you cannot.",
+          content: "The best revenge is not to be like your enemy.\n\nFocus on what you can control, and let go of what you cannot.",
           virtue: "Justice"
         },
         {
-          content: "Very little is needed to make a happy life; it is all within yourself, in your way of thinking.",
+          content: "Very little is needed to make a happy life.\n\nIt is all within yourself, in your way of thinking.",
           virtue: "Temperance"
         },
         {
-          content: "When you wake up in the morning, tell yourself: The people I deal with today will be meddling, ungrateful, arrogant, dishonest, jealous, and surly.",
+          content: "When you wake up in the morning, tell yourself:\n\nThe people I deal with today will be meddling, ungrateful, arrogant, dishonest, jealous, and surly.\n\nThey are like this because they can't tell good from evil. But I have seen the beauty of good, and the ugliness of evil, and have recognized that the wrongdoer has a nature related to my own.",
           virtue: "Courage"
         },
         {
-          content: "Accept the things to which fate binds you, and love the people with whom fate brings you together.",
+          content: "Accept the things to which fate binds you,\nand love the people with whom fate brings you together.",
           virtue: "Wisdom"
         }
       ];
@@ -111,8 +124,8 @@ const Marcus = () => {
   // Show loading while checking auth
   if (loading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-lg text-gray-600">Loading...</div>
+      <div className="min-h-screen bg-gradient-to-br from-stone-50 to-amber-50/30 flex items-center justify-center">
+        <div className="text-lg text-stone-600">Loading...</div>
       </div>
     );
   }
@@ -120,131 +133,191 @@ const Marcus = () => {
   // Don't render if not authenticated (will redirect via useEffect)
   if (!user) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-lg text-gray-600">Redirecting to login...</div>
+      <div className="min-h-screen bg-gradient-to-br from-stone-50 to-amber-50/30 flex items-center justify-center">
+        <div className="text-lg text-stone-600">Redirecting to login...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white font-inter flex flex-col">
-      {/* Header */}
-      <div className="sticky top-0 bg-white border-b border-gray-100 px-6 py-4 z-10">
-        <div className="flex items-center gap-4 mb-4">
+    <motion.div 
+      className="min-h-screen bg-gradient-to-br from-stone-50 to-amber-50/30 font-inter flex flex-col relative overflow-hidden"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.8, ease: [0.25, 0.4, 0.25, 1] }}
+    >
+      {/* Ambient background elements */}
+      <div className="absolute inset-0 opacity-30">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-radial from-amber-100/40 to-transparent rounded-full blur-3xl"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-gradient-radial from-stone-100/40 to-transparent rounded-full blur-3xl"></div>
+      </div>
+
+      {/* Header Navigation */}
+      <motion.div 
+        className="sticky top-0 bg-white/80 backdrop-blur-xl border-b border-stone-200/50 px-6 py-4 z-20"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.2 }}
+      >
+        <div className="flex items-center justify-between max-w-4xl mx-auto">
+          {/* Left - Back Arrow */}
           <Button
             onClick={() => navigate('/dashboard')}
             variant="ghost"
             size="sm"
-            className="p-2 hover:bg-gray-100 rounded-full"
+            className="p-3 hover:bg-stone-100/70 rounded-full transition-all duration-200"
           >
-            <ArrowLeft size={20} className="text-gray-600" />
+            <ArrowLeft size={20} className="text-stone-600" />
+          </Button>
+          
+          {/* Center - Logo with Laurel */}
+          <div className="flex items-center gap-2">
+            <div className="text-2xl">🏛️</div>
+            <h1 className="text-2xl font-semibold text-stone-800 tracking-tight">MarcusGPT</h1>
+          </div>
+          
+          {/* Right - Settings */}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="p-3 hover:bg-stone-100/70 rounded-full transition-all duration-200"
+          >
+            <Settings size={20} className="text-stone-600" />
           </Button>
         </div>
-        
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-black mb-2">Ask Marcus Anything</h1>
-          <p className="text-gray-500 text-lg">Speak your mind. He'll listen.</p>
-        </div>
-      </div>
+      </motion.div>
 
       {/* Chat Area */}
-      <div className="flex-1 flex flex-col max-w-4xl mx-auto w-full px-6">
-        <ScrollArea className="flex-1 py-6" ref={scrollAreaRef}>
-          <div className="space-y-6">
-            {messages.length === 0 && (
-              <div className="text-center py-12">
-                <p className="text-gray-400 text-lg mb-4">
-                  Welcome. What weighs on your mind today?
-                </p>
-                <Separator className="my-8 opacity-30" />
-              </div>
-            )}
-
-            {messages.map((message, index) => (
-              <div key={message.id}>
-                {index > 0 && (
-                  <Separator className="my-6 opacity-20" />
-                )}
-                
-                <div className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-2xl ${message.sender === 'user' ? 'ml-12' : 'mr-12'}`}>
-                    <div
-                      className={`rounded-2xl px-6 py-4 ${
-                        message.sender === 'user'
-                          ? 'bg-white border border-gray-200 text-gray-900'
-                          : 'bg-black text-white'
-                      }`}
-                    >
-                      <p className={`text-base leading-relaxed ${
-                        message.sender === 'marcus' ? 'font-serif' : ''
-                      }`}>
-                        {message.content}
-                      </p>
-                    </div>
-                    
-                    {message.virtue && (
-                      <div className="mt-2 ml-2">
-                        <span className="text-xs text-gray-400 bg-gray-50 px-2 py-1 rounded-full">
-                          {message.virtue}
-                        </span>
+      <div className="flex-1 flex flex-col max-w-4xl mx-auto w-full px-6 relative z-10">
+        <ScrollArea className="flex-1 py-8" ref={scrollAreaRef}>
+          <AnimatePresence>
+            <div className="space-y-8">
+              {messages.map((message, index) => (
+                <motion.div
+                  key={message.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ 
+                    duration: 0.6, 
+                    delay: index * 0.1,
+                    ease: [0.25, 0.4, 0.25, 1] 
+                  }}
+                  className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+                >
+                  <motion.div 
+                    className={`max-w-2xl ${message.sender === 'user' ? 'ml-16' : 'mr-16'} group`}
+                    whileHover={{ scale: 1.02 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    {message.sender === 'marcus' ? (
+                      <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-lg border border-stone-200/50 hover:shadow-xl transition-shadow duration-300">
+                        {/* Marcus Header */}
+                        <div className="flex items-center mb-4">
+                          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-stone-300 to-stone-400 mr-4 flex items-center justify-center overflow-hidden">
+                            <div className="text-2xl">👤</div>
+                          </div>
+                          <div>
+                            <div className="font-serif text-lg font-medium text-stone-800">Marcus Aurelius</div>
+                            <div className="text-sm text-stone-500">Moments ago</div>
+                          </div>
+                        </div>
+                        
+                        {/* Marcus Message */}
+                        <div className="font-serif text-stone-700 leading-relaxed text-lg whitespace-pre-line">
+                          {message.content}
+                        </div>
+                        
+                        {message.virtue && (
+                          <div className="mt-4">
+                            <span className="text-xs text-stone-400 bg-stone-100/70 px-3 py-1 rounded-full">
+                              {message.virtue}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="bg-stone-100/70 backdrop-blur-sm rounded-3xl px-5 py-4 border border-stone-200/30">
+                        <p className="text-stone-700 text-base font-medium">
+                          {message.content}
+                        </p>
                       </div>
                     )}
-                    
-                    <div className={`mt-2 text-xs text-gray-400 ${
-                      message.sender === 'user' ? 'text-right' : 'text-left'
-                    }`}>
-                      {message.timestamp.toLocaleTimeString([], { 
-                        hour: '2-digit', 
-                        minute: '2-digit' 
-                      })}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
+                  </motion.div>
+                </motion.div>
+              ))}
 
-            {isTyping && (
-              <div className="flex justify-start">
-                <div className="max-w-2xl mr-12">
-                  <div className="bg-black text-white rounded-2xl px-6 py-4">
-                    <div className="flex space-x-1">
-                      <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
-                      <div className="w-2 h-2 bg-white rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
-                      <div className="w-2 h-2 bg-white rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></div>
+              {isTyping && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="flex justify-start"
+                >
+                  <div className="max-w-2xl mr-16">
+                    <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-lg border border-stone-200/50">
+                      <div className="flex items-center mb-4">
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-stone-300 to-stone-400 mr-4 flex items-center justify-center">
+                          <div className="text-2xl">👤</div>
+                        </div>
+                        <div>
+                          <div className="font-serif text-lg font-medium text-stone-800">Marcus Aurelius</div>
+                          <div className="text-sm text-stone-500">is thinking...</div>
+                        </div>
+                      </div>
+                      <div className="flex space-x-2">
+                        <motion.div 
+                          className="w-2 h-2 bg-stone-400 rounded-full"
+                          animate={{ scale: [1, 1.2, 1] }}
+                          transition={{ duration: 1, repeat: Infinity, delay: 0 }}
+                        />
+                        <motion.div 
+                          className="w-2 h-2 bg-stone-400 rounded-full"
+                          animate={{ scale: [1, 1.2, 1] }}
+                          transition={{ duration: 1, repeat: Infinity, delay: 0.2 }}
+                        />
+                        <motion.div 
+                          className="w-2 h-2 bg-stone-400 rounded-full"
+                          animate={{ scale: [1, 1.2, 1] }}
+                          transition={{ duration: 1, repeat: Infinity, delay: 0.4 }}
+                        />
+                      </div>
                     </div>
                   </div>
-                  <div className="mt-2 text-xs text-gray-400">
-                    Marcus is thinking...
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
+                </motion.div>
+              )}
+            </div>
+          </AnimatePresence>
         </ScrollArea>
 
         {/* Input Area */}
-        <div className="sticky bottom-0 bg-white border-t border-gray-100 py-4">
-          <div className="flex gap-3 items-center">
-            <Input
-              ref={inputRef}
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyDown={handleKeyPress}
-              placeholder="Ask your question…"
-              className="flex-1 rounded-xl border-gray-200 px-4 py-3 text-base focus:border-black focus:ring-black"
-              disabled={isTyping}
-            />
-            <Button
-              onClick={handleSendMessage}
-              disabled={!inputValue.trim() || isTyping}
-              className="rounded-xl bg-black hover:bg-gray-800 text-white p-3 transition-all duration-200 hover:scale-105"
-            >
-              <Send size={20} />
-            </Button>
+        <motion.div 
+          className="sticky bottom-0 bg-white/80 backdrop-blur-xl border-t border-stone-200/50 py-6"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.4 }}
+        >
+          <div className="flex gap-4 items-center">
+            <div className="flex-1 relative">
+              <Input
+                ref={inputRef}
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyDown={handleKeyPress}
+                placeholder="Send a message..."
+                className="w-full rounded-2xl border-stone-200/50 bg-white/70 backdrop-blur-sm px-6 py-4 text-base focus:border-stone-300 focus:ring-stone-300/30 shadow-sm hover:shadow-md transition-all duration-200"
+                disabled={isTyping}
+              />
+              {!inputValue && !isTyping && (
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 flex space-x-1">
+                  <div className="w-1 h-1 bg-stone-300 rounded-full"></div>
+                  <div className="w-1 h-1 bg-stone-300 rounded-full"></div>
+                  <div className="w-1 h-1 bg-stone-300 rounded-full"></div>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

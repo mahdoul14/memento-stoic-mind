@@ -68,7 +68,9 @@ const ModernOperatingCards: React.FC = () => {
       scale: 1,
       transition: {
         duration: 0.8,
-        ease: [0.25, 0.4, 0.25, 1]
+        type: "spring",
+        stiffness: 100,
+        damping: 15
       }
     }
   };
@@ -88,7 +90,7 @@ const ModernOperatingCards: React.FC = () => {
           whileHover={{ 
             scale: 1.02,
             y: -8,
-            transition: { duration: 0.3, ease: [0.25, 0.4, 0.25, 1] }
+            transition: { duration: 0.3, type: "spring", stiffness: 400 }
           }}
           className="group relative"
         >
