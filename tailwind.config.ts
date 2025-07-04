@@ -21,9 +21,13 @@ export default {
 		extend: {
 			fontFamily: {
 				'inter': ['Inter', 'sans-serif'],
+				'serif': ['Georgia', 'serif'],
 			},
 			gridTemplateColumns: {
 				'80': 'repeat(80, minmax(0, 1fr))',
+			},
+			backgroundImage: {
+				'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
 			},
 			colors: {
 				border: 'hsl(var(--border))',
