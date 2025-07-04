@@ -67,7 +67,8 @@ const PricingSection = () => {
         }
         
         console.log('Checkout URL received:', data.url);
-        window.open(data.url, '_blank');
+        // Redirect to Stripe Checkout in the same window for better UX
+        window.location.href = data.url;
       } catch (error) {
         console.error('Error creating checkout:', error);
         toast({

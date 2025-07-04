@@ -28,8 +28,14 @@ serve(async (req) => {
     }
     logStep("Stripe key verified");
 
-    const { priceType } = await req.json();
-    logStep("Request received", { priceType });
+    const requestBody = await req.json();
+    const { priceType, productId } = requestBody;
+    logStep("Request received", { priceType, productId });
+
+    // Validate input
+    if (!priceType && !productId) {
+      throw new Error("Either priceType or productId is required");
+    }
 
     // Try to get authenticated user, but don't require it for checkout
     let user = null;
@@ -75,61 +81,92 @@ serve(async (req) => {
       }
     }
 
-    // Define pricing based on your actual product
-    let lineItems;
-    let mode = "subscription";
-    
-    if (priceType === 'monthly') {
-      lineItems = [{
-        price_data: {
-          currency: "gbp",
-          product_data: { name: "Monthly Access" },
-          unit_amount: 900, // £9.00
-          recurring: { interval: "month" },
-        },
-        quantity: 1,
-      }];
-      mode = "subscription";
-    } else if (priceType === 'lifetime') {
-      lineItems = [{
-        price_data: {
-          currency: "gbp",
-          product_data: { name: "Lifetime Access" },
-          unit_amount: 7900, // £79.00
-        },
-        quantity: 1,
-      }];
-      mode = "payment"; // One-time payment for lifetime access
-    } else {
-      throw new Error("Invalid price type");
-    }
-
     const origin = req.headers.get("origin") || "http://localhost:3000";
-    
-    const sessionConfig = {
-      customer: customerId,
-      customer_email: customerId ? undefined : customerEmail,
-      line_items: lineItems,
-      mode: mode,
-      success_url: `${origin}/?success=true`,
-      cancel_url: `${origin}/?canceled=true`,
-      allow_promotion_codes: true,
-      billing_address_collection: 'required' as const,
-    };
+    let sessionConfig;
+
+    // Handle different pricing scenarios
+    if (productId) {
+      // If productId is provided, use it directly
+      logStep("Using provided product ID", { productId });
+      sessionConfig = {
+        customer: customerId,
+        customer_email: customerId ? undefined : customerEmail,
+        line_items: [{
+          price: productId,
+          quantity: 1,
+        }],
+        mode: "subscription", // Default to subscription, can be overridden
+        success_url: `${origin}/?success=true&session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${origin}/?canceled=true`,
+        allow_promotion_codes: true,
+        billing_address_collection: 'required' as const,
+      };
+    } else {
+      // Legacy support for priceType
+      let lineItems;
+      let mode = "subscription";
+      
+      if (priceType === 'monthly') {
+        lineItems = [{
+          price_data: {
+            currency: "gbp",
+            product_data: { name: "Monthly Access" },
+            unit_amount: 900, // £9.00
+            recurring: { interval: "month" },
+          },
+          quantity: 1,
+        }];
+        mode = "subscription";
+      } else if (priceType === 'lifetime') {
+        lineItems = [{
+          price_data: {
+            currency: "gbp",
+            product_data: { name: "Lifetime Access" },
+            unit_amount: 7900, // £79.00
+          },
+          quantity: 1,
+        }];
+        mode = "payment"; // One-time payment for lifetime access
+      } else {
+        throw new Error("Invalid price type");
+      }
+
+      sessionConfig = {
+        customer: customerId,
+        customer_email: customerId ? undefined : customerEmail,
+        line_items: lineItems,
+        mode: mode,
+        success_url: `${origin}/?success=true&session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${origin}/?canceled=true`,
+        allow_promotion_codes: true,
+        billing_address_collection: 'required' as const,
+      };
+    }
 
     logStep("Creating checkout session", { config: sessionConfig });
 
     const session = await stripe.checkout.sessions.create(sessionConfig);
 
-    logStep("Checkout session created", { sessionId: session.id, url: session.url });
+    logStep("Checkout session created successfully", { 
+      sessionId: session.id, 
+      url: session.url,
+      mode: session.mode 
+    });
 
-    return new Response(JSON.stringify({ url: session.url }), {
+    return new Response(JSON.stringify({ 
+      url: session.url,
+      sessionId: session.id 
+    }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    logStep("ERROR in create-checkout", { message: errorMessage, stack: error instanceof Error ? error.stack : undefined });
+    logStep("ERROR in create-checkout", { 
+      message: errorMessage, 
+      stack: error instanceof Error ? error.stack : undefined 
+    });
+    
     return new Response(JSON.stringify({ 
       error: errorMessage,
       details: "Check the function logs for more information"

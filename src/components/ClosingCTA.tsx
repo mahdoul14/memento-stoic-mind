@@ -31,7 +31,9 @@ const ClosingCTA = () => {
         });
 
         if (error) throw error;
-        window.open(data.url, '_blank');
+        
+        // Redirect to Stripe Checkout in the same window
+        window.location.href = data.url;
       } catch (error) {
         console.error('Error creating checkout:', error);
         toast({
