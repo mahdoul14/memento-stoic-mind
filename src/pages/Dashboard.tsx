@@ -177,6 +177,21 @@ const Dashboard = () => {
     setAge(calculatedAge);
   };
 
+  const handleSignOut = async () => {
+    try {
+      console.log('Signing out...');
+      await signOut();
+      navigate('/');
+    } catch (error) {
+      console.error('Error signing out:', error);
+      toast({
+        title: "Error",
+        description: "There was a problem signing out. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
   // Show loading while checking auth
   if (loading) {
     return (
@@ -216,10 +231,7 @@ const Dashboard = () => {
             <div className="w-4 h-4 bg-white rounded-full"></div>
           </div>
           <Button
-            onClick={() => {
-              console.log('Signing out...');
-              signOut();
-            }}
+            onClick={handleSignOut}
             variant="ghost"
             size="sm"
             className="text-gray-600 hover:text-black hover:bg-gray-100 transition-all duration-200 hover:scale-105"
