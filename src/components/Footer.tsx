@@ -11,9 +11,9 @@ const Footer = () => {
             Build discipline, clarity, and wisdom in the digital age.
           </p>
           <div className="flex justify-center space-x-8 text-sm">
-            <a href="#" className="font-inter text-gray-500 hover:text-black transition-colors">Privacy</a>
             <a href="#" className="font-inter text-gray-500 hover:text-black transition-colors">Terms</a>
-            <a href="#" className="font-inter text-gray-500 hover:text-black transition-colors">Contact</a>
+            <a href="#" className="font-inter text-gray-500 hover:text-black transition-colors">Privacy</a>
+            <a href="#" className="font-inter text-gray-500 hover:text-black transition-colors">Built with Lovable</a>
           </div>
         </div>
       </div>
