@@ -78,6 +78,39 @@ export type Database = {
         }
         Relationships: []
       }
+      virtue_entries: {
+        Row: {
+          Courage: number | null
+          created_at: string | null
+          date: string | null
+          id: number
+          Justice: number | null
+          temperance: number | null
+          user_id: string
+          wisdom: number | null
+        }
+        Insert: {
+          Courage?: number | null
+          created_at?: string | null
+          date?: string | null
+          id?: number
+          Justice?: number | null
+          temperance?: number | null
+          user_id?: string
+          wisdom?: number | null
+        }
+        Update: {
+          Courage?: number | null
+          created_at?: string | null
+          date?: string | null
+          id?: number
+          Justice?: number | null
+          temperance?: number | null
+          user_id?: string
+          wisdom?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

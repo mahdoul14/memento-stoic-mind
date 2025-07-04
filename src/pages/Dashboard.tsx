@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
 import { BirthYearForm } from "@/components/BirthYearForm";
 import { MementoMoriGrid } from "@/components/MementoMoriGrid";
+import { VirtueTracker } from "@/components/VirtueTracker";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -326,49 +327,21 @@ const Dashboard = () => {
           </Card>
         </div>
 
-        {/* Virtue Tracker Section */}
+        {/* Virtue Tracker Section - NEW */}
         <Card className={`bg-white rounded-3xl shadow-lg border-0 transition-all duration-700 ease-out hover:shadow-xl hover:-translate-y-1 ${
           animateCards ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
         }`} style={{ animationDelay: '0.3s' }}>
           <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-bold text-black">TRACK YOUR VIRTUES</h3>
-              <div className="text-right">
-                <div className="text-3xl font-bold text-black">3/7</div>
-                <div className="text-xs text-gray-500">days</div>
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 bg-gray-100 rounded-lg transition-transform duration-200 hover:scale-110">
+                <TrendingUp className="w-5 h-5 text-black" />
               </div>
+              <h3 className="text-lg font-bold text-black">Virtue Tracker</h3>
             </div>
             
-            <div className="space-y-4">
-              {virtues.map((virtue, index) => (
-                <div key={virtue.name} className="flex items-center justify-between group">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 border-2 border-black rounded-full flex items-center justify-center transition-transform duration-200 group-hover:scale-110">
-                      <span className="text-sm">{virtue.icon}</span>
-                    </div>
-                    <span className="text-black font-medium">{virtue.name.toLowerCase()}</span>
-                  </div>
-                  <div className="flex gap-1">
-                    {[...Array(7)].map((_, i) => (
-                      <div 
-                        key={i} 
-                        className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                          i < virtue.streak ? 'bg-black scale-100' : 'bg-gray-200 scale-90'
-                        }`}
-                        style={{ 
-                          transitionDelay: `${i * 100}ms`,
-                          transform: i < virtue.streak ? 'scale(1)' : 'scale(0.9)'
-                        }}
-                      />
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
+            <p className="text-gray-700 text-sm mb-6">Rate yourself on the four Stoic virtues today.</p>
             
-            <div className="mt-4 text-center">
-              <p className="text-gray-500 text-sm">Covered this week</p>
-            </div>
+            <VirtueTracker userId={user.id} />
           </CardContent>
         </Card>
 
