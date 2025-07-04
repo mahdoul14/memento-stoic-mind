@@ -35,13 +35,8 @@ export const MementoMoriGrid = ({ age }: MementoMoriGridProps) => {
 
   return (
     <div>
-      <div className="mb-4 text-center">
-        <div className="text-2xl font-bold text-black">{weeksLived}</div>
-        <div className="text-sm text-gray-500">weeks lived</div>
-      </div>
-      
-      {/* 10x10 Grid of Dots representing weeks */}
-      <div className="grid grid-cols-10 gap-1 justify-center max-w-[200px] mx-auto mb-4">
+      {/* 10x10 Grid of Dots representing weeks - moved to top */}
+      <div className="grid grid-cols-10 gap-2 justify-center max-w-[240px] mx-auto mb-6">
         {[...Array(100)].map((_, index) => {
           const weekNumber = index + 1;
           const isFilled = index < filledDots;
@@ -50,7 +45,7 @@ export const MementoMoriGrid = ({ age }: MementoMoriGridProps) => {
           return (
             <div
               key={index}
-              className={`w-4 h-4 rounded-full border transition-all duration-200 hover:scale-125 cursor-pointer ${
+              className={`w-5 h-5 rounded-full border transition-all duration-200 hover:scale-125 cursor-pointer ${
                 isFilled 
                   ? isCurrentWeek 
                     ? 'bg-red-500 border-red-600' 
@@ -64,6 +59,11 @@ export const MementoMoriGrid = ({ age }: MementoMoriGridProps) => {
             />
           );
         })}
+      </div>
+      
+      <div className="mb-4 text-center">
+        <div className="text-2xl font-bold text-black">{weeksLived}</div>
+        <div className="text-sm text-gray-500">weeks lived</div>
       </div>
       
       <div className="text-center text-xs text-gray-500">

@@ -362,9 +362,22 @@ const Dashboard = () => {
             {loadingProfile ? (
               <div className="text-gray-500 text-sm">Loading your timeline...</div>
             ) : !birthYear ? (
-              <div className="space-y-4">
-                <div className="text-gray-500 text-sm text-center mb-4">
-                  Enter your birth year to view your timeline.
+              <div className="space-y-6">
+                {/* Show empty grid first */}
+                <div className="grid grid-cols-10 gap-2 justify-center max-w-[240px] mx-auto">
+                  {[...Array(100)].map((_, index) => (
+                    <div
+                      key={index}
+                      className="w-5 h-5 rounded-full bg-gray-100 border border-gray-300"
+                    />
+                  ))}
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-black">0</div>
+                  <div className="text-sm text-gray-500 mb-4">weeks lived</div>
+                  <div className="text-gray-500 text-sm text-center mb-4">
+                    Enter your birth year to view your timeline.
+                  </div>
                 </div>
                 <BirthYearForm userId={user.id} onBirthYearSaved={handleBirthYearSaved} />
               </div>
