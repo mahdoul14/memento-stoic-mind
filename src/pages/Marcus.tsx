@@ -124,8 +124,8 @@ const Marcus = () => {
   // Show loading while checking auth
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-stone-50 to-amber-50/30 flex items-center justify-center">
-        <div className="text-lg text-stone-600">Loading...</div>
+      <div className="min-h-screen bg-gradient-to-b from-stone-50 to-amber-50/20 flex items-center justify-center">
+        <div className="text-lg text-stone-600 font-inter">Loading...</div>
       </div>
     );
   }
@@ -133,65 +133,62 @@ const Marcus = () => {
   // Don't render if not authenticated (will redirect via useEffect)
   if (!user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-stone-50 to-amber-50/30 flex items-center justify-center">
-        <div className="text-lg text-stone-600">Redirecting to login...</div>
+      <div className="min-h-screen bg-gradient-to-b from-stone-50 to-amber-50/20 flex items-center justify-center">
+        <div className="text-lg text-stone-600 font-inter">Redirecting to login...</div>
       </div>
     );
   }
 
   return (
     <motion.div 
-      className="min-h-screen bg-gradient-to-br from-stone-50 to-amber-50/30 font-inter flex flex-col relative overflow-hidden"
+      className="min-h-screen bg-gradient-to-b from-stone-50 to-amber-50/20 font-inter flex flex-col"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8, ease: [0.25, 0.4, 0.25, 1] }}
     >
-      {/* Ambient background elements */}
-      <div className="absolute inset-0 opacity-30">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-radial from-amber-100/40 to-transparent rounded-full blur-3xl"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-gradient-radial from-stone-100/40 to-transparent rounded-full blur-3xl"></div>
+      {/* Subtle ambient background */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/3 left-1/4 w-96 h-96 bg-gradient-radial from-amber-100/30 to-transparent rounded-full blur-3xl"></div>
+        <div className="absolute bottom-1/3 right-1/4 w-96 h-96 bg-gradient-radial from-stone-100/30 to-transparent rounded-full blur-3xl"></div>
       </div>
 
       {/* Header Navigation */}
-      <motion.div 
-        className="sticky top-0 bg-white/80 backdrop-blur-xl border-b border-stone-200/50 px-6 py-4 z-20"
+      <motion.header 
+        className="sticky top-0 bg-white/80 backdrop-blur-xl border-b border-stone-200/40 px-6 py-4 z-20"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.2 }}
       >
         <div className="flex items-center justify-between max-w-4xl mx-auto">
-          {/* Left - Back Arrow */}
           <Button
             onClick={() => navigate('/dashboard')}
             variant="ghost"
             size="sm"
-            className="p-3 hover:bg-stone-100/70 rounded-full transition-all duration-200"
+            className="p-2 hover:bg-stone-100/60 rounded-xl transition-all duration-200"
           >
             <ArrowLeft size={20} className="text-stone-600" />
           </Button>
           
-          {/* Center - Logo with Laurel */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <div className="text-2xl">🏛️</div>
             <h1 className="text-2xl font-semibold text-stone-800 tracking-tight">MarcusGPT</h1>
           </div>
           
-          {/* Right - Settings */}
           <Button
             variant="ghost"
             size="sm"
-            className="p-3 hover:bg-stone-100/70 rounded-full transition-all duration-200"
+            className="p-2 hover:bg-stone-100/60 rounded-xl transition-all duration-200"
           >
             <Settings size={20} className="text-stone-600" />
           </Button>
         </div>
-      </motion.div>
+      </motion.header>
 
-      {/* Chat Area */}
+      {/* Chat Container */}
       <div className="flex-1 flex flex-col max-w-4xl mx-auto w-full px-6 relative z-10">
         <ScrollArea className="flex-1 py-8" ref={scrollAreaRef}>
-          <AnimatePresence>
-            <div className="space-y-8">
+          <div className="space-y-6">
+            <AnimatePresence>
               {messages.map((message, index) => (
                 <motion.div
                   key={message.id}
@@ -205,16 +202,15 @@ const Marcus = () => {
                   className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
                   <motion.div 
-                    className={`max-w-2xl ${message.sender === 'user' ? 'ml-16' : 'mr-16'} group`}
-                    whileHover={{ scale: 1.02 }}
+                    className={`max-w-2xl ${message.sender === 'user' ? 'ml-16' : 'mr-16'}`}
+                    whileHover={{ scale: 1.01 }}
                     transition={{ duration: 0.2 }}
                   >
                     {message.sender === 'marcus' ? (
-                      <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-lg border border-stone-200/50 hover:shadow-xl transition-shadow duration-300">
-                        {/* Marcus Header */}
+                      <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-lg border border-stone-200/30 hover:shadow-xl transition-all duration-300">
                         <div className="flex items-center mb-4">
-                          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-stone-300 to-stone-400 mr-4 flex items-center justify-center overflow-hidden">
-                            <div className="text-2xl">👤</div>
+                          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-stone-200 to-stone-300 mr-4 flex items-center justify-center overflow-hidden border border-stone-300/20">
+                            <div className="text-xl text-stone-700">👤</div>
                           </div>
                           <div>
                             <div className="font-serif text-lg font-medium text-stone-800">Marcus Aurelius</div>
@@ -222,21 +218,20 @@ const Marcus = () => {
                           </div>
                         </div>
                         
-                        {/* Marcus Message */}
                         <div className="font-serif text-stone-700 leading-relaxed text-lg whitespace-pre-line">
                           {message.content}
                         </div>
                         
                         {message.virtue && (
                           <div className="mt-4">
-                            <span className="text-xs text-stone-400 bg-stone-100/70 px-3 py-1 rounded-full">
+                            <span className="text-xs text-stone-500 bg-stone-100/60 px-3 py-1 rounded-full">
                               {message.virtue}
                             </span>
                           </div>
                         )}
                       </div>
                     ) : (
-                      <div className="bg-stone-100/70 backdrop-blur-sm rounded-3xl px-5 py-4 border border-stone-200/30">
+                      <div className="bg-stone-100/60 backdrop-blur-sm rounded-3xl px-5 py-4 border border-stone-200/20">
                         <p className="text-stone-700 text-base font-medium">
                           {message.content}
                         </p>
@@ -253,10 +248,10 @@ const Marcus = () => {
                   className="flex justify-start"
                 >
                   <div className="max-w-2xl mr-16">
-                    <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-lg border border-stone-200/50">
+                    <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-lg border border-stone-200/30">
                       <div className="flex items-center mb-4">
-                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-stone-300 to-stone-400 mr-4 flex items-center justify-center">
-                          <div className="text-2xl">👤</div>
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-stone-200 to-stone-300 mr-4 flex items-center justify-center border border-stone-300/20">
+                          <div className="text-xl text-stone-700">👤</div>
                         </div>
                         <div>
                           <div className="font-serif text-lg font-medium text-stone-800">Marcus Aurelius</div>
@@ -284,13 +279,13 @@ const Marcus = () => {
                   </div>
                 </motion.div>
               )}
-            </div>
-          </AnimatePresence>
+            </AnimatePresence>
+          </div>
         </ScrollArea>
 
         {/* Input Area */}
         <motion.div 
-          className="sticky bottom-0 bg-white/80 backdrop-blur-xl border-t border-stone-200/50 py-6"
+          className="sticky bottom-0 bg-white/80 backdrop-blur-xl border-t border-stone-200/40 py-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.4 }}
@@ -303,14 +298,26 @@ const Marcus = () => {
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyDown={handleKeyPress}
                 placeholder="Send a message..."
-                className="w-full rounded-2xl border-stone-200/50 bg-white/70 backdrop-blur-sm px-6 py-4 text-base focus:border-stone-300 focus:ring-stone-300/30 shadow-sm hover:shadow-md transition-all duration-200"
+                className="w-full rounded-2xl border-stone-200/40 bg-white/70 backdrop-blur-sm px-6 py-4 text-base focus:border-stone-300 focus:ring-stone-300/20 shadow-sm hover:shadow-md transition-all duration-200 font-inter"
                 disabled={isTyping}
               />
               {!inputValue && !isTyping && (
                 <div className="absolute right-4 top-1/2 -translate-y-1/2 flex space-x-1">
-                  <div className="w-1 h-1 bg-stone-300 rounded-full"></div>
-                  <div className="w-1 h-1 bg-stone-300 rounded-full"></div>
-                  <div className="w-1 h-1 bg-stone-300 rounded-full"></div>
+                  <motion.div 
+                    className="w-1 h-1 bg-stone-400 rounded-full"
+                    animate={{ opacity: [0.3, 1, 0.3] }}
+                    transition={{ duration: 1.5, repeat: Infinity, delay: 0 }}
+                  />
+                  <motion.div 
+                    className="w-1 h-1 bg-stone-400 rounded-full"
+                    animate={{ opacity: [0.3, 1, 0.3] }}
+                    transition={{ duration: 1.5, repeat: Infinity, delay: 0.2 }}
+                  />
+                  <motion.div 
+                    className="w-1 h-1 bg-stone-400 rounded-full"
+                    animate={{ opacity: [0.3, 1, 0.3] }}
+                    transition={{ duration: 1.5, repeat: Infinity, delay: 0.4 }}
+                  />
                 </div>
               )}
             </div>
