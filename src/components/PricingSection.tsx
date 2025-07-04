@@ -1,7 +1,10 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
 const PricingSection = () => {
-  return <section className="bg-white py-24 lg:py-32">
+  return (
+    <section className="bg-white py-24 lg:py-32">
       <div className="container mx-auto px-6">
         <div className="text-center mb-20 animate-fade-in">
           <h2 className="font-inter font-bold text-4xl lg:text-5xl text-black mb-6 tracking-tight uppercase">
@@ -37,9 +40,7 @@ const PricingSection = () => {
             </CardContent>
           </Card>
           
-          <Card style={{
-          animationDelay: '0.2s'
-        }} className="border-2 border-black rounded-2xl p-8 relative animate-fade-in bg-black">
+          <Card className="bg-white border-2 border-black rounded-2xl p-8 relative animate-fade-in" style={{ animationDelay: '0.2s' }}>
             <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
               <span className="bg-black text-white px-4 py-1 rounded-full text-sm font-inter font-medium">
                 Best Value
@@ -72,9 +73,7 @@ const PricingSection = () => {
           </Card>
         </div>
         
-        <div className="text-center animate-fade-in" style={{
-        animationDelay: '0.4s'
-      }}>
+        <div className="text-center animate-fade-in" style={{ animationDelay: '0.4s' }}>
           <Button className="bg-black text-white hover:bg-gray-800 rounded-full px-8 py-4 text-lg font-inter font-medium mb-4">
             Unlock Full Access →
           </Button>
@@ -83,6 +82,8 @@ const PricingSection = () => {
           </p>
         </div>
       </div>
-    </section>;
+    </section>
+  );
 };
+
 export default PricingSection;
