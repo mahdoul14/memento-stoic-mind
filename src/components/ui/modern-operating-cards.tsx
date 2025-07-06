@@ -3,44 +3,34 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Brain, Globe, Zap, Shield } from 'lucide-react';
+import { MessageCircle, BarChart, Calendar, BookOpenText } from 'lucide-react';
 
 interface CardData {
   title: string;
   description: string;
-  tagline: string;
   icon: React.ComponentType<{ className?: string }>;
-  gradient: string;
 }
 
 const cardData: CardData[] = [
   {
     title: "MarcusGPT",
-    tagline: "Converse with ancient wisdom. Get modern clarity.",
-    description: "Ask life's hardest questions. Get answers from the Stoics. Built with GPT-4, fine-tuned to think like Marcus Aurelius.",
-    icon: Brain,
-    gradient: "from-blue-500/20 to-cyan-500/20"
-  },
-  {
-    title: "Memento Mori",
-    tagline: "A visual reminder of your mortality — and your purpose.",
-    description: "Track your life in weeks. Each dot reminds you to live with urgency, intention, and grace.",
-    icon: Globe,
-    gradient: "from-purple-500/20 to-pink-500/20"
-  },
-  {
-    title: "Stoic Journal",
-    tagline: "Reflect. Accept. Improve.",
-    description: "Capture your thoughts each day. Practice morning intention and evening reflection, just like the Stoics.",
-    icon: Zap,
-    gradient: "from-amber-500/20 to-orange-500/20"
+    description: "A Stoic AI that helps you reflect wisely, powered by GPT-4.",
+    icon: MessageCircle,
   },
   {
     title: "Virtue Tracker",
-    tagline: "Measure yourself by what matters.",
-    description: "Daily reflections on courage, temperance, wisdom, and justice. Let your actions show your growth.",
-    icon: Shield,
-    gradient: "from-emerald-500/20 to-teal-500/20"
+    description: "Log your actions daily and track how well you're living your values.",
+    icon: BarChart,
+  },
+  {
+    title: "Memento Mori",
+    description: "A visual countdown of your weeks, to stay mindful of time.",
+    icon: Calendar,
+  },
+  {
+    title: "Stoic Journal",
+    description: "A guided journal to help you write, reflect, and stay grounded.",
+    icon: BookOpenText,
   }
 ];
 
@@ -50,7 +40,7 @@ const ModernOperatingCards: React.FC = () => {
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.15,
+        staggerChildren: 0.1,
         delayChildren: 0.2
       }
     }
@@ -59,29 +49,25 @@ const ModernOperatingCards: React.FC = () => {
   const cardVariants = {
     hidden: { 
       opacity: 0, 
-      y: 40,
-      scale: 0.95
+      y: 30
     },
     visible: {
       opacity: 1,
       y: 0,
-      scale: 1,
       transition: {
-        duration: 0.8,
-        type: "spring" as const,
-        stiffness: 100,
-        damping: 15
+        duration: 0.6,
+        ease: [0.25, 0.46, 0.45, 0.94]
       }
     }
   };
 
   return (
     <motion.div
-      className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto"
+      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto"
       variants={containerVariants}
       initial="hidden"
       whileInView="visible"
-      viewport={{ once: true, margin: "-80px" }}
+      viewport={{ once: true, margin: "-50px" }}
     >
       {cardData.map((card, index) => (
         <motion.div
@@ -89,42 +75,37 @@ const ModernOperatingCards: React.FC = () => {
           variants={cardVariants}
           whileHover={{ 
             scale: 1.02,
-            y: -8,
-            transition: { duration: 0.3, type: "spring" as const, stiffness: 400 }
+            y: -4,
+            transition: { duration: 0.2, ease: "easeOut" }
           }}
           className="group relative"
         >
-          {/* Glass card with backdrop blur */}
-          <div className="relative p-8 rounded-2xl bg-white/70 backdrop-blur-xl border border-white/20 shadow-xl hover:shadow-2xl transition-all duration-500 hover:bg-white/80">
-            {/* Gradient overlay */}
-            <div className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${card.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
+          {/* Main card */}
+          <div className="relative p-8 rounded-3xl bg-white border border-gray-200/50 transition-all duration-300 hover:border-gray-300/80 overflow-hidden">
+            {/* Subtle gradient overlay on hover */}
+            <div className="absolute inset-0 bg-gradient-to-br from-gray-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            
+            {/* Glow effect */}
+            <div className="absolute -inset-1 bg-gradient-to-r from-gray-200/20 via-gray-100/40 to-gray-200/20 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-sm -z-10" />
             
             {/* Content */}
-            <div className="relative z-10">
+            <div className="relative z-10 text-center">
               {/* Icon */}
-              <div className="mb-6">
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                  <card.icon className="w-8 h-8 text-gray-700" />
+              <div className="mb-6 flex justify-center">
+                <div className="w-14 h-14 rounded-2xl bg-gray-100 flex items-center justify-center group-hover:bg-gray-200 transition-colors duration-300">
+                  <card.icon className="w-7 h-7 text-gray-700" />
                 </div>
               </div>
 
-              {/* Tagline */}
-              <p className="text-sm font-medium text-gray-500 mb-2 group-hover:text-gray-600 transition-colors duration-300">
-                {card.tagline}
-              </p>
-
               {/* Title */}
-              <h3 className="text-2xl font-bold text-gray-900 mb-4 group-hover:text-gray-800 transition-colors duration-300">
+              <h3 className="text-xl font-semibold text-gray-900 mb-3 group-hover:text-gray-800 transition-colors duration-300">
                 {card.title}
               </h3>
 
               {/* Description */}
-              <p className="text-gray-600 leading-relaxed group-hover:text-gray-700 transition-colors duration-300">
+              <p className="text-gray-600 leading-relaxed text-sm group-hover:text-gray-700 transition-colors duration-300">
                 {card.description}
               </p>
-
-              {/* Subtle glow effect */}
-              <div className="absolute -inset-1 bg-gradient-to-r from-transparent via-white/30 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm -z-10" />
             </div>
           </div>
         </motion.div>

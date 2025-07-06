@@ -62,21 +62,18 @@ export type Database = {
           birth_year: number | null
           created_at: string
           id: number
-          is_paid: boolean | null
           user_id: string | null
         }
         Insert: {
           birth_year?: number | null
           created_at?: string
           id?: number
-          is_paid?: boolean | null
           user_id?: string | null
         }
         Update: {
           birth_year?: number | null
           created_at?: string
           id?: number
-          is_paid?: boolean | null
           user_id?: string | null
         }
         Relationships: []
