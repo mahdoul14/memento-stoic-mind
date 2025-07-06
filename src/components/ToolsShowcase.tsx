@@ -1,4 +1,5 @@
 
+import { useState } from "react";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import ModernOperatingCards from "@/components/ui/modern-operating-cards";
 
@@ -6,8 +7,8 @@ const ToolsShowcase = () => {
   const { ref: sectionRef, isVisible: sectionVisible } = useScrollAnimation();
 
   return (
-    <section id="tools" className="bg-white py-20 lg:py-28">
-      <div className="container mx-auto px-6 max-w-7xl">
+    <section id="tools" className="bg-white py-24 lg:py-32">
+      <div className="container mx-auto px-6 max-w-6xl">
         <div 
           ref={sectionRef}
           className={`text-center mb-16 transition-all duration-700 ease-out ${
@@ -16,11 +17,11 @@ const ToolsShowcase = () => {
               : 'opacity-0 translate-y-6'
           }`}
         >
-          <h2 className="font-inter font-semibold text-3xl lg:text-4xl text-black mb-4 tracking-tight">
-            Tools for Stoic Living
+          <h2 className="font-inter font-bold text-4xl lg:text-5xl text-black mb-4 tracking-tight">
+            Explore the Tools
           </h2>
-          <p className="font-inter text-lg text-gray-600 max-w-2xl mx-auto">
-            Four essential tools to help you live with wisdom, courage, and intention
+          <p className="font-inter text-xl text-gray-600">
+            Each one designed to deepen your practice
           </p>
         </div>
         
