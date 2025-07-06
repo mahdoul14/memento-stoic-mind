@@ -4,9 +4,8 @@ import { ArrowRight } from "lucide-react";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 
 const Hero = () => {
-  const { ref: leftPhoneRef, isVisible: leftPhoneVisible } = useScrollAnimation();
-  const { ref: rightPhoneRef, isVisible: rightPhoneVisible } = useScrollAnimation();
   const { ref: heroTextRef, isVisible: heroTextVisible } = useScrollAnimation();
+  const { ref: phonesRef, isVisible: phonesVisible } = useScrollAnimation();
 
   return (
     <section className="bg-white py-24 lg:py-32">
@@ -35,133 +34,73 @@ const Hero = () => {
           </Button>
         </div>
         
-        <div className="flex flex-col lg:flex-row gap-12 justify-center items-center max-w-5xl mx-auto">
-          {/* Phone 1 - MarcusGPT */}
+        {/* UI Mockup Images Row */}
+        <div 
+          ref={phonesRef}
+          className={`relative flex justify-center items-center max-w-6xl mx-auto transition-all duration-1200 ease-out ${
+            phonesVisible 
+              ? 'opacity-100 translate-y-0' 
+              : 'opacity-0 translate-y-12'
+          }`}
+        >
+          {/* First Phone - Community Feed */}
           <div 
-            ref={leftPhoneRef}
-            className={`relative transition-all duration-1200 ease-out ${
-              leftPhoneVisible 
-                ? 'opacity-100 translate-y-0 translate-x-0' 
-                : 'opacity-0 translate-y-12 -translate-x-8'
-            }`}
-            style={{ transitionDelay: leftPhoneVisible ? '300ms' : '0ms' }}
+            className="relative z-10 transform transition-all duration-700 hover:scale-105 hover:z-30"
+            style={{ 
+              transitionDelay: phonesVisible ? '200ms' : '0ms',
+              transform: `translateX(-60px) rotate(-8deg) ${phonesVisible ? 'translateY(0)' : 'translateY(20px)'}`
+            }}
           >
-            <div className="w-72 h-[580px] bg-black rounded-[2.5rem] p-2 transform perspective-1000 rotate-y-[-12deg] rotate-x-[8deg] shadow-2xl hover:shadow-3xl hover:scale-105 transition-all duration-500 ease-out">
-              <div className="w-full h-full bg-white rounded-[2rem] overflow-hidden flex flex-col">
-                {/* Status Bar */}
-                <div className="flex justify-between items-center px-6 py-3 text-xs text-black">
-                  <span className="font-medium">10:42</span>
-                  <div className="w-6 h-6 bg-black rounded-full"></div>
-                  <div className="flex gap-1">
-                    <div className="w-4 h-2 bg-black rounded-sm"></div>
-                    <div className="w-6 h-2 bg-black rounded-sm"></div>
-                  </div>
-                </div>
-                
-                {/* App Content */}
-                <div className="flex-1 px-6 pb-6 flex flex-col">
-                  <div className="text-center py-4 border-b border-gray-100">
-                    <h2 className="text-lg font-semibold text-black">MarcusGPT</h2>
-                  </div>
-                  
-                  <div className="flex-1 flex flex-col justify-center space-y-4">
-                    {/* User Message */}
-                    <div className="flex justify-end">
-                      <div className="bg-gray-100 rounded-2xl px-4 py-3 max-w-[200px]">
-                        <p className="text-sm text-black">What should I focus on today?</p>
-                      </div>
-                    </div>
-                    
-                    {/* Marcus Reply */}
-                    <div className="flex justify-start">
-                      <div className="bg-black rounded-2xl px-4 py-3 max-w-[200px]">
-                        <p className="text-sm text-white">Your task is to practice discipline in all things...</p>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Bottom dots */}
-                  <div className="flex justify-center space-x-2 mt-4">
-                    <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
-                    <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
-                    <div className="w-2 h-2 bg-black rounded-full"></div>
-                    <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <img 
+              src="/lovable-uploads/276e4f9a-ba4a-423a-b8cb-bdf6ea250d86.png" 
+              alt="Community Feed" 
+              className="w-64 h-auto drop-shadow-2xl rounded-[2.5rem] hover:drop-shadow-3xl transition-all duration-500"
+            />
           </div>
-          
-          {/* Phone 2 - Memento Mori */}
+
+          {/* Second Phone - Profile/Stats */}
           <div 
-            ref={rightPhoneRef}
-            className={`relative transition-all duration-1200 ease-out ${
-              rightPhoneVisible 
-                ? 'opacity-100 translate-y-0 translate-x-0' 
-                : 'opacity-0 translate-y-12 translate-x-8'
-            }`}
-            style={{ transitionDelay: rightPhoneVisible ? '500ms' : '0ms' }}
+            className="relative z-20 transform transition-all duration-700 hover:scale-105 hover:z-30"
+            style={{ 
+              transitionDelay: phonesVisible ? '400ms' : '0ms',
+              transform: `translateX(-30px) rotate(-2deg) ${phonesVisible ? 'translateY(0)' : 'translateY(20px)'}`
+            }}
           >
-            <div className="w-72 h-[580px] bg-black rounded-[2.5rem] p-2 transform perspective-1000 rotate-y-[12deg] rotate-x-[8deg] shadow-2xl hover:shadow-3xl hover:scale-105 transition-all duration-500 ease-out">
-              <div className="w-full h-full bg-white rounded-[2rem] overflow-hidden flex flex-col">
-                {/* Status Bar */}
-                <div className="flex justify-between items-center px-6 py-3 text-xs text-black">
-                  <span className="font-medium">10:42</span>
-                  <div className="w-6 h-6 bg-black rounded-full"></div>
-                  <div className="flex gap-1">
-                    <div className="w-4 h-2 bg-black rounded-sm"></div>
-                    <div className="w-6 h-2 bg-black rounded-sm"></div>
-                  </div>
-                </div>
-                
-                {/* App Content */}
-                <div className="flex-1 px-6 pb-6 flex flex-col justify-center items-center text-center">
-                  <div className="mb-8">
-                    <p className="text-sm text-gray-500 mb-2">Wed Sep</p>
-                    <p className="text-6xl font-bold text-black mb-1">18</p>
-                    <div className="flex items-center justify-center space-x-4 text-sm">
-                      <span className="text-black font-medium">Day</span>
-                      <span className="text-gray-500">45%</span>
-                    </div>
-                    
-                    {/* Progress dots */}
-                    <div className="grid grid-cols-6 gap-1 mt-4 mb-8">
-                      {Array.from({ length: 24 }, (_, i) => (
-                        <div
-                          key={i}
-                          className={`w-2 h-2 rounded-full ${
-                            i < 11 ? 'bg-black' : 'bg-gray-200'
-                          }`}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-4 w-full">
-                    <h3 className="text-lg font-semibold text-black">Memento Mori</h3>
-                    <div className="text-center">
-                      <div className="text-4xl font-bold text-black mb-2">73</div>
-                      <div className="text-base text-black mb-1">Years</div>
-                      <div className="text-sm text-gray-500 mb-6">Average lifespan remaining</div>
-                      
-                      {/* Life Progress Bar */}
-                      <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
-                        <div className="bg-black h-2 rounded-full" style={{ width: '25%' }}></div>
-                      </div>
-                      <div className="text-xs text-gray-500">Life Progress</div>
-                    </div>
-                  </div>
-                  
-                  {/* Bottom dots */}
-                  <div className="flex justify-center space-x-2 mt-8">
-                    <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
-                    <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
-                    <div className="w-2 h-2 bg-black rounded-full"></div>
-                    <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <img 
+              src="/lovable-uploads/0085a22d-6704-44bc-b834-fe86b9bc5cf4.png" 
+              alt="Profile Stats" 
+              className="w-64 h-auto drop-shadow-2xl rounded-[2.5rem] hover:drop-shadow-3xl transition-all duration-500"
+            />
+          </div>
+
+          {/* Third Phone - Daily Quote */}
+          <div 
+            className="relative z-30 transform transition-all duration-700 hover:scale-105 hover:z-40"
+            style={{ 
+              transitionDelay: phonesVisible ? '600ms' : '0ms',
+              transform: `translateX(0px) rotate(2deg) ${phonesVisible ? 'translateY(0)' : 'translateY(20px)'}`
+            }}
+          >
+            <img 
+              src="/lovable-uploads/806fd202-003c-4d1f-98fd-08a9f3e8aed6.png" 
+              alt="Daily Quote" 
+              className="w-64 h-auto drop-shadow-2xl rounded-[2.5rem] hover:drop-shadow-3xl transition-all duration-500"
+            />
+          </div>
+
+          {/* Fourth Phone - Meditation Timer */}
+          <div 
+            className="relative z-20 transform transition-all duration-700 hover:scale-105 hover:z-30"
+            style={{ 
+              transitionDelay: phonesVisible ? '800ms' : '0ms',
+              transform: `translateX(30px) rotate(8deg) ${phonesVisible ? 'translateY(0)' : 'translateY(20px)'}`
+            }}
+          >
+            <img 
+              src="/lovable-uploads/78f4c57c-dd38-402d-9c39-8fa6282b9401.png" 
+              alt="Meditation Timer" 
+              className="w-64 h-auto drop-shadow-2xl rounded-[2.5rem] hover:drop-shadow-3xl transition-all duration-500"
+            />
           </div>
         </div>
       </div>
