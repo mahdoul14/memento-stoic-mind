@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
@@ -17,19 +18,24 @@ const Hero = () => {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   const handleEnterTemple = () => {
+    console.log('Enter Temple clicked', { user: !!user, isPaid, paymentLoading });
+    
     // If not signed in, redirect to auth page
     if (!user) {
+      console.log('User not signed in, redirecting to auth');
       navigate('/auth');
       return;
     }
 
     // If signed in but not paid, show payment modal
     if (!isPaid) {
+      console.log('User signed in but not paid, showing payment modal');
       setShowPaymentModal(true);
       return;
     }
 
     // If signed in and paid, go to dashboard
+    console.log('User signed in and paid, redirecting to dashboard');
     navigate('/dashboard');
   };
 
