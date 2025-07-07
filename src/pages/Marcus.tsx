@@ -1,10 +1,12 @@
+
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { ArrowLeft, Settings, ChevronDown, Check } from "lucide-react";
+import { ArrowLeft, Settings, ChevronDown, Check, ChevronUp } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useChatMessages } from "@/hooks/useChatMessages";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface Message {
@@ -19,25 +21,35 @@ const Marcus = () => {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
   const [isAccordionOpen, setIsAccordionOpen] = useState(false);
-  
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "1",
-      content: "How do I handle difficult people?",
-      sender: 'user',
-      timestamp: new Date(),
-    },
-    {
-      id: "2",
-      content: "Remember that their actions reflect their character, not yours.\n\nMeet their weakness with your strength, their anger with your patience.\n\nYou cannot control their behavior, only your response to it.",
-      sender: 'marcus',
-      timestamp: new Date(),
-    }
-  ]);
   const [inputValue, setInputValue] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const { 
+    messages: chatHistory, 
+    loading: messagesLoading, 
+    showAll, 
+    sendMessage, 
+    toggleShowAll 
+  } = useChatMessages({ userId: user?.id });
+
+  // Convert chat history to message format
+  const messages: Message[] = chatHistory.flatMap(chat => [
+    {
+      id: `${chat.id}-user`,
+      content: chat.user_message,
+      sender: 'user' as const,
+      timestamp: new Date(chat.created_at),
+    },
+    {
+      id: `${chat.id}-marcus`,
+      content: chat.ai_response,
+      sender: 'marcus' as const,
+      timestamp: new Date(chat.created_at),
+      virtue: "Wisdom"
+    }
+  ]).sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
 
   // Only redirect if we're sure there's no user after loading is complete
   useEffect(() => {
@@ -62,57 +74,18 @@ const Marcus = () => {
   }, [user]);
 
   const handleSendMessage = async () => {
-    if (!inputValue.trim()) return;
+    if (!inputValue.trim() || isTyping) return;
 
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      content: inputValue,
-      sender: 'user',
-      timestamp: new Date(),
-    };
-
-    setMessages(prev => [...prev, userMessage]);
     setInputValue("");
     setIsTyping(true);
 
-    // Simulate Marcus thinking and responding
-    setTimeout(() => {
-      const marcusResponses = [
-        {
-          content: "You have power over your mind — not outside events.\n\nRealize this, and you will find strength.",
-          virtue: "Discipline"
-        },
-        {
-          content: "The best revenge is not to be like your enemy.\n\nFocus on what you can control, and let go of what you cannot.",
-          virtue: "Justice"
-        },
-        {
-          content: "Very little is needed to make a happy life.\n\nIt is all within yourself, in your way of thinking.",
-          virtue: "Temperance"
-        },
-        {
-          content: "When you wake up in the morning, tell yourself:\n\nThe people I deal with today will be meddling, ungrateful, arrogant, dishonest, jealous, and surly.\n\nThey are like this because they can't tell good from evil. But I have seen the beauty of good, and the ugliness of evil, and have recognized that the wrongdoer has a nature related to my own.",
-          virtue: "Courage"
-        },
-        {
-          content: "Accept the things to which fate binds you,\nand love the people with whom fate brings you together.",
-          virtue: "Wisdom"
-        }
-      ];
-
-      const randomResponse = marcusResponses[Math.floor(Math.random() * marcusResponses.length)];
-      
-      const marcusMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        content: randomResponse.content,
-        sender: 'marcus',
-        timestamp: new Date(),
-        virtue: randomResponse.virtue,
-      };
-
-      setMessages(prev => [...prev, marcusMessage]);
+    try {
+      await sendMessage(inputValue);
+    } catch (error) {
+      console.error('Error sending message:', error);
+    } finally {
       setIsTyping(false);
-    }, 2000);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -175,13 +148,33 @@ const Marcus = () => {
             <h1 className="text-2xl font-semibold text-stone-800 tracking-tight">MarcusGPT</h1>
           </div>
           
-          <Button
-            variant="ghost"
-            size="sm"
-            className="p-2 hover:bg-stone-100/60 rounded-xl transition-all duration-200"
-          >
-            <Settings size={20} className="text-stone-600" />
-          </Button>
+          <div className="flex items-center gap-2">
+            {chatHistory.length > 0 && (
+              <Button
+                onClick={toggleShowAll}
+                variant="ghost"
+                size="sm"
+                className="p-2 hover:bg-stone-100/60 rounded-xl transition-all duration-200 text-xs"
+              >
+                {showAll ? (
+                  <>
+                    Recent <ChevronUp size={16} className="ml-1" />
+                  </>
+                ) : (
+                  <>
+                    All <ChevronDown size={16} className="ml-1" />
+                  </>
+                )}
+              </Button>
+            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="p-2 hover:bg-stone-100/60 rounded-xl transition-all duration-200"
+            >
+              <Settings size={20} className="text-stone-600" />
+            </Button>
+          </div>
         </div>
       </motion.header>
 
@@ -189,6 +182,19 @@ const Marcus = () => {
       <div className="flex-1 flex flex-col max-w-4xl mx-auto w-full px-6 relative z-10">
         <ScrollArea className="flex-1 py-8" ref={scrollAreaRef}>
           <div className="space-y-6">
+            {messages.length === 0 && !messagesLoading && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex justify-center"
+              >
+                <div className="text-center text-stone-500 py-8">
+                  <h3 className="text-lg font-medium mb-2">Welcome to MarcusGPT</h3>
+                  <p>Ask Marcus Aurelius for Stoic wisdom and guidance</p>
+                </div>
+              </motion.div>
+            )}
+
             <AnimatePresence>
               {messages.map((message, index) => (
                 <motion.div
