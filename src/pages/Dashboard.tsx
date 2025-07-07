@@ -19,6 +19,10 @@ const Dashboard = () => {
   const [animateCards, setAnimateCards] = useState(false);
   const [typingDots, setTypingDots] = useState('');
 
+  // User profile state
+  const [isPaid, setIsPaid] = useState(false);
+  const [loadingProfile, setLoadingProfile] = useState(true);
+
   // Journal widget state
   const [isJournalExpanded, setIsJournalExpanded] = useState(false);
   const [journalText, setJournalText] = useState('');
@@ -29,7 +33,6 @@ const Dashboard = () => {
   // Memento Mori state
   const [birthYear, setBirthYear] = useState<number | null>(null);
   const [age, setAge] = useState(0);
-  const [loadingProfile, setLoadingProfile] = useState(true);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -39,11 +42,7 @@ const Dashboard = () => {
     }
   }, [user, authLoading, navigate]);
 
-  // Check if user has access (authenticated AND subscribed)
-  const hasAccess = user && subscribed;
-  const isLoading = authLoading || subscriptionLoading;
-
-  // Fetch user profile data
+  // Fetch user profile data including is_paid status
   useEffect(() => {
     const fetchProfile = async () => {
       if (!user) return;
@@ -54,7 +53,7 @@ const Dashboard = () => {
         
         const { data, error } = await supabase
           .from('profiles')
-          .select('birth_year')
+          .select('birth_year, is_paid')
           .eq('user_id', user.id)
           .maybeSingle();
 
@@ -62,11 +61,30 @@ const Dashboard = () => {
 
         if (error) {
           console.error('Error fetching profile:', error);
-        } else if (data && data.birth_year) {
-          setBirthYear(data.birth_year);
-          const currentYear = new Date().getFullYear();
-          const calculatedAge = currentYear - data.birth_year;
-          setAge(calculatedAge);
+        } else if (data) {
+          if (data.birth_year) {
+            setBirthYear(data.birth_year);
+            const currentYear = new Date().getFullYear();
+            const calculatedAge = currentYear - data.birth_year;
+            setAge(calculatedAge);
+          }
+          setIsPaid(data.is_paid || false);
+        } else {
+          // Create profile if it doesn't exist
+          const { data: newProfile, error: insertError } = await supabase
+            .from('profiles')
+            .insert({
+              user_id: user.id,
+              is_paid: false
+            })
+            .select('birth_year, is_paid')
+            .single();
+
+          if (insertError) {
+            console.error('Error creating profile:', insertError);
+          } else {
+            setIsPaid(newProfile.is_paid || false);
+          }
         }
       } catch (error) {
         console.error('Error fetching profile:', error);
@@ -91,7 +109,7 @@ const Dashboard = () => {
         
         const today = new Date().toISOString().split('T')[0];
         const { data, error } = await supabase
-          .from('journal_entries')
+          .from('journal_entries.csv')
           .select('id')
           .eq('user_id', user.id)
           .eq('date', today)
@@ -142,10 +160,10 @@ const Dashboard = () => {
       console.log('Attempting to save journal entry for user:', user.id);
       
       const { data, error } = await supabase
-        .from('journal_entries')
+        .from('journal_entries.csv')
         .insert({
           user_id: user.id,
-          entry_text: journalText.trim(),
+          content: journalText.trim(),
           date: new Date().toISOString().split('T')[0]
         })
         .select();
@@ -211,7 +229,9 @@ const Dashboard = () => {
     }
   };
 
-  // Show loading while checking auth and subscription
+  // Show loading while checking auth, subscription, and profile
+  const isLoading = authLoading || subscriptionLoading || loadingProfile;
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -224,6 +244,9 @@ const Dashboard = () => {
   if (!user) {
     return null;
   }
+
+  // Check if user has access (authenticated AND either subscribed OR is_paid is true)
+  const hasAccess = user && (subscribed || isPaid);
 
   // Show subscription required screen if user doesn't have access
   if (!hasAccess) {
