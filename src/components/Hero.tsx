@@ -55,14 +55,25 @@ const Hero = () => {
               Influenced by the great minds
             </p>
             
-            <Button 
-              onClick={handleEnterTemple}
-              disabled={paymentLoading}
-              className="bg-black text-white hover:bg-gray-800 hover:scale-105 hover:shadow-lg rounded-full px-8 py-4 text-lg font-inter font-medium mb-16 group transition-all duration-200 ease-in-out disabled:opacity-50"
-            >
-              Enter the Temple
-              <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-            </Button>
+            <div className="mb-16">
+              <button 
+                onClick={handleEnterTemple}
+                disabled={paymentLoading}
+                className="relative bg-red-600 text-white hover:bg-red-700 hover:scale-105 hover:shadow-2xl rounded-full px-12 py-5 text-lg font-inter font-semibold group transition-all duration-300 ease-out disabled:opacity-50 overflow-hidden"
+              >
+                {/* Moving gradient animation */}
+                <div className="absolute inset-0 bg-gradient-to-r from-red-500 via-red-600 to-red-700 animate-gradient-x opacity-80"></div>
+                
+                {/* Button content */}
+                <span className="relative z-10 flex items-center">
+                  Enter the Temple
+                  <ArrowRight className="ml-3 h-5 w-5 group-hover:translate-x-2 transition-transform duration-300" />
+                </span>
+                
+                {/* Shine effect */}
+                <div className="absolute inset-0 -skew-x-12 bg-gradient-to-r from-transparent via-white/20 to-transparent w-0 group-hover:w-full transition-all duration-700 ease-out"></div>
+              </button>
+            </div>
           </div>
           
           <div className="flex flex-col lg:flex-row gap-12 justify-center items-center max-w-5xl mx-auto">

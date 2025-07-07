@@ -128,6 +128,20 @@ html {
   }
 }
 
+/* Gradient animation for the button */
+@keyframes gradient-x {
+  0%, 100% {
+    transform: translateX(-100%);
+  }
+  50% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-gradient-x {
+  animation: gradient-x 3s ease-in-out infinite;
+}
+
 /* Subtle entrance animation for cards */
 @keyframes card-entrance {
   0% {
