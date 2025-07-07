@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
+import { RecentJournalEntries } from "@/components/RecentJournalEntries";
 
 interface JournalWidgetProps {
   userId: string;
@@ -24,6 +25,7 @@ export const JournalWidget = ({
   const [isJournalExpanded, setIsJournalExpanded] = useState(false);
   const [journalText, setJournalText] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const handleSaveJournal = async () => {
     if (!journalText.trim() || !userId) return;
@@ -51,6 +53,7 @@ export const JournalWidget = ({
       setJournalText('');
       setIsJournalExpanded(false);
       onEntryCreated();
+      setRefreshTrigger(prev => prev + 1); // Trigger refresh of recent entries
       toast({
         title: "Saved successfully",
         description: "Your reflection has been saved.",
@@ -128,10 +131,20 @@ export const JournalWidget = ({
           <Button 
             onClick={() => setIsJournalExpanded(true)}
             variant="outline" 
-            className="w-full border-2 border-black text-black hover:bg-black hover:text-white font-medium rounded-full transition-all duration-200 hover:scale-105"
+            className="w-full border-2 border-black text-black hover:bg-black hover:text-white font-medium rounded-full transition-all duration-200 hover:scale-105 mb-4"
           >
             Write Now
           </Button>
+        )}
+
+        {/* Recent Entries Section */}
+        {!isJournalExpanded && (
+          <div className="mt-4 pt-4 border-t border-gray-100">
+            <RecentJournalEntries 
+              userId={userId} 
+              refreshTrigger={refreshTrigger}
+            />
+          </div>
         )}
       </CardContent>
     </Card>
