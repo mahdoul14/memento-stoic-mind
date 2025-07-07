@@ -18,10 +18,12 @@ export const BirthYearForm = ({ userId, onBirthYearSaved }: BirthYearFormProps) 
     e.preventDefault();
     
     const year = parseInt(birthYear);
-    if (!year || year < 1900 || year > new Date().getFullYear()) {
+    const currentYear = new Date().getFullYear();
+    
+    if (!year || year < 1900 || year > currentYear) {
       toast({
         title: "Invalid birth year",
-        description: "Please enter a valid birth year between 1900 and current year.",
+        description: `Please enter a valid birth year between 1900 and ${currentYear}.`,
         variant: "destructive"
       });
       return;
@@ -51,7 +53,7 @@ export const BirthYearForm = ({ userId, onBirthYearSaved }: BirthYearFormProps) 
       onBirthYearSaved(year);
       toast({
         title: "Birth year saved",
-        description: "Your timeline has been updated.",
+        description: "Your life timeline has been updated.",
       });
     } catch (error) {
       console.error('Error saving birth year:', error);
@@ -66,7 +68,7 @@ export const BirthYearForm = ({ userId, onBirthYearSaved }: BirthYearFormProps) 
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3">
+    <form onSubmit={handleSubmit} className="space-y-4">
       <div>
         <Input
           type="number"
@@ -75,15 +77,22 @@ export const BirthYearForm = ({ userId, onBirthYearSaved }: BirthYearFormProps) 
           onChange={(e) => setBirthYear(e.target.value)}
           min="1900"
           max={new Date().getFullYear()}
-          className="text-center"
+          className="text-center text-lg py-3"
         />
       </div>
       <Button
         type="submit"
         disabled={saving || !birthYear}
-        className="w-full bg-black text-white hover:bg-gray-800 font-medium rounded-full transition-all duration-200 hover:scale-105"
+        className="w-full bg-black text-white hover:bg-gray-800 font-medium rounded-full transition-all duration-200 hover:scale-105 py-3"
       >
-        {saving ? 'Saving...' : 'Save Birth Year'}
+        {saving ? (
+          <div className="flex items-center gap-2">
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+            Saving...
+          </div>
+        ) : (
+          'Save Birth Year'
+        )}
       </Button>
     </form>
   );
