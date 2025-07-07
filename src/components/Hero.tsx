@@ -12,6 +12,7 @@ const Hero = () => {
   const { ref: leftPhoneRef, isVisible: leftPhoneVisible } = useScrollAnimation();
   const { ref: rightPhoneRef, isVisible: rightPhoneVisible } = useScrollAnimation();
   const { ref: heroTextRef, isVisible: heroTextVisible } = useScrollAnimation();
+  const { ref: appStoreRef, isVisible: appStoreVisible } = useScrollAnimation();
   const navigate = useNavigate();
   const { user } = useAuth();
   const { isPaid, loading: paymentLoading } = usePaymentStatus();
@@ -209,6 +210,30 @@ const Hero = () => {
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* App Store Button */}
+          <div 
+            ref={appStoreRef}
+            className={`mt-16 transition-all duration-1000 ease-out ${
+              appStoreVisible 
+                ? 'opacity-100 translate-y-0' 
+                : 'opacity-0 translate-y-8'
+            }`}
+            style={{ transitionDelay: appStoreVisible ? '700ms' : '0ms' }}
+          >
+            <div className="flex justify-center">
+              <a 
+                href="#" 
+                className="inline-block transform transition-all duration-300 ease-out hover:scale-105 hover:shadow-2xl hover:-translate-y-1 active:scale-95"
+              >
+                <img 
+                  src="/lovable-uploads/bbc869b1-ddf5-4d77-a368-81445673428b.png" 
+                  alt="Download on the App Store" 
+                  className="h-16 w-auto rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300"
+                />
+              </a>
             </div>
           </div>
         </div>

@@ -21,20 +21,6 @@ export function NavBarDemo() {
     { name: 'Pricing', url: '#pricing', icon: DollarSign }
   ]
 
-  const handleNavClick = (url: string) => {
-    if (url === '/dashboard') {
-      if (!user) {
-        navigate('/auth')
-        return
-      }
-      if (!isPaid) {
-        setShowPaymentModal(true)
-        return
-      }
-      navigate('/dashboard')
-    }
-  }
-
   const handleAuthClick = () => {
     if (!user) {
       navigate('/auth')
@@ -61,10 +47,7 @@ export function NavBarDemo() {
   return (
     <>
       <div className="relative">
-        <NavBar 
-          items={navItems} 
-          onItemClick={handleNavClick}
-        />
+        <NavBar items={navItems} />
         <div className="fixed top-6 right-6 z-50">
           <Button
             onClick={handleAuthClick}
