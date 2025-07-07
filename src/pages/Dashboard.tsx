@@ -1,7 +1,7 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { usePaymentStatus } from "@/hooks/usePaymentStatus";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
@@ -18,6 +18,7 @@ import { useFloatingChat } from "@/hooks/useFloatingChat";
 const Dashboard = () => {
   const navigate = useNavigate();
   const { user, signOut, loading: authLoading } = useAuth();
+  const { isPaid, loading: paymentLoading } = usePaymentStatus();
   const [animateCards, setAnimateCards] = useState(false);
   const [typingDots, setTypingDots] = useState('');
   const { isOpen: isChatOpen, toggle: toggleChat, open: openChat } = useFloatingChat();
@@ -31,13 +32,22 @@ const Dashboard = () => {
   const [age, setAge] = useState(0);
   const [loadingProfile, setLoadingProfile] = useState(true);
 
-  // Redirect if not authenticated
+  // Redirect if not authenticated or not paid
   useEffect(() => {
-    if (!authLoading && !user) {
-      console.log('No user found, redirecting to auth');
-      navigate('/auth');
+    if (!authLoading && !paymentLoading) {
+      if (!user) {
+        console.log('No user found, redirecting to auth');
+        navigate('/auth');
+        return;
+      }
+      
+      if (!isPaid) {
+        console.log('User not paid, redirecting to home');
+        navigate('/');
+        return;
+      }
     }
-  }, [user, authLoading, navigate]);
+  }, [user, isPaid, authLoading, paymentLoading, navigate]);
 
   // Fetch user profile data
   useEffect(() => {
@@ -155,8 +165,8 @@ const Dashboard = () => {
     setHasEntryToday(true);
   };
 
-  // Show loading while checking auth
-  if (authLoading) {
+  // Show loading while checking auth or payment status
+  if (authLoading || paymentLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-lg text-gray-600">Loading...</div>
@@ -164,8 +174,8 @@ const Dashboard = () => {
     );
   }
 
-  // Don't render if not authenticated
-  if (!user) {
+  // Don't render if not authenticated or not paid
+  if (!user || !isPaid) {
     return null;
   }
 
