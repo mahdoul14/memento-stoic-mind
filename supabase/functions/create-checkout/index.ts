@@ -116,6 +116,10 @@ serve(async (req) => {
       cancel_url: `${origin}/?canceled=true`,
       allow_promotion_codes: true,
       billing_address_collection: 'required' as const,
+      metadata: {
+        payment_type: priceType || 'unknown',
+        user_id: user?.id || 'guest'
+      }
     };
 
     logStep("Creating checkout session", { config: sessionConfig });
@@ -125,7 +129,8 @@ serve(async (req) => {
     logStep("Checkout session created successfully", { 
       sessionId: session.id, 
       url: session.url,
-      mode: session.mode 
+      mode: session.mode,
+      customerId: session.customer
     });
 
     // Store the stripe_customer_id in the user's profile for webhook matching
@@ -140,7 +145,8 @@ serve(async (req) => {
         .from('profiles')
         .upsert({ 
           user_id: user.id, 
-          stripe_customer_id: session.customer as string 
+          stripe_customer_id: session.customer as string,
+          stripe_session_id: session.id
         }, { onConflict: 'user_id' });
 
       if (profileError) {
@@ -152,7 +158,8 @@ serve(async (req) => {
       } else {
         logStep("Successfully stored stripe_customer_id in profile", { 
           userId: user.id, 
-          customerId: session.customer 
+          customerId: session.customer,
+          sessionId: session.id
         });
       }
     }

@@ -10,15 +10,30 @@ import { useState } from "react"
 
 export function NavBarDemo() {
   const { user } = useAuth()
-  const { isPaid } = usePaymentStatus()
+  const { isPaid, loading: paymentLoading } = usePaymentStatus()
   const navigate = useNavigate()
   const [showPaymentModal, setShowPaymentModal] = useState(false)
 
   const navItems = [
     { name: 'Tools', url: '#tools', icon: Briefcase },
-    { name: 'Dashboard', url: '#dashboard', icon: User },
+    // Only show Dashboard if user is paid
+    ...(user && isPaid ? [{ name: 'Dashboard', url: '/dashboard', icon: User }] : []),
     { name: 'Pricing', url: '#pricing', icon: DollarSign }
   ]
+
+  const handleNavClick = (url: string) => {
+    if (url === '/dashboard') {
+      if (!user) {
+        navigate('/auth')
+        return
+      }
+      if (!isPaid) {
+        setShowPaymentModal(true)
+        return
+      }
+      navigate('/dashboard')
+    }
+  }
 
   const handleAuthClick = () => {
     if (!user) {
@@ -36,16 +51,27 @@ export function NavBarDemo() {
     navigate('/dashboard')
   }
 
+  const getButtonText = () => {
+    if (!user) return 'Sign In'
+    if (paymentLoading) return 'Checking...'
+    if (!isPaid) return 'Upgrade to Pro'
+    return 'Go to Dashboard'
+  }
+
   return (
     <>
       <div className="relative">
-        <NavBar items={navItems} />
+        <NavBar 
+          items={navItems} 
+          onItemClick={handleNavClick}
+        />
         <div className="fixed top-6 right-6 z-50">
           <Button
             onClick={handleAuthClick}
-            className="bg-black text-white font-semibold px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors"
+            disabled={paymentLoading}
+            className="bg-black text-white font-semibold px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50"
           >
-            {user ? 'Go to Dashboard' : 'Sign In'} →
+            {getButtonText()} →
           </Button>
         </div>
       </div>

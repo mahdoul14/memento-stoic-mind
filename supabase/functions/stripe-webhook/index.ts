@@ -70,16 +70,30 @@ serve(async (req) => {
         const session = event.data.object as Stripe.Checkout.Session;
         logStep("Processing checkout.session.completed", { 
           sessionId: session.id, 
-          customerId: session.customer 
+          customerId: session.customer,
+          mode: session.mode
         });
 
         if (session.customer && typeof session.customer === 'string') {
           const customerId = session.customer;
           
-          // Update is_paid to true for this customer
+          // Determine payment type based on session mode
+          let paymentType = "unknown";
+          if (session.mode === "subscription") {
+            paymentType = "monthly";
+          } else if (session.mode === "payment") {
+            paymentType = "lifetime";
+          }
+          
+          // Update profile with payment information
           const { data, error } = await supabaseClient
             .from('profiles')
-            .update({ is_paid: true })
+            .update({ 
+              is_paid: true,
+              payment_type: paymentType,
+              payment_date: new Date().toISOString(),
+              stripe_session_id: session.id
+            })
             .eq('stripe_customer_id', customerId);
 
           if (error) {
@@ -87,7 +101,12 @@ serve(async (req) => {
             throw error;
           }
 
-          logStep("Successfully updated payment status to paid", { customerId, affectedRows: data });
+          logStep("Successfully updated payment status to paid", { 
+            customerId, 
+            paymentType,
+            sessionId: session.id,
+            affectedRows: data 
+          });
         } else {
           logStep("No customer ID found in session", { sessionId: session.id });
         }
@@ -104,18 +123,19 @@ serve(async (req) => {
         if (subscription.customer && typeof subscription.customer === 'string') {
           const customerId = subscription.customer;
           
-          // Update is_paid to false for this customer
+          // Update is_paid to false for subscription cancellation (keep lifetime payments)
           const { data, error } = await supabaseClient
             .from('profiles')
             .update({ is_paid: false })
-            .eq('stripe_customer_id', customerId);
+            .eq('stripe_customer_id', customerId)
+            .eq('payment_type', 'monthly'); // Only affect monthly subscriptions
 
           if (error) {
             logStep("Error updating payment status to unpaid", { error: error.message, customerId });
             throw error;
           }
 
-          logStep("Successfully updated payment status to unpaid", { customerId, affectedRows: data });
+          logStep("Successfully updated monthly subscription to unpaid", { customerId, affectedRows: data });
         } else {
           logStep("No customer ID found in subscription", { subscriptionId: subscription.id });
         }
@@ -132,11 +152,12 @@ serve(async (req) => {
         if (invoice.customer && typeof invoice.customer === 'string') {
           const customerId = invoice.customer;
           
-          // Update is_paid to false for this customer
+          // Update is_paid to false for failed payments (only monthly subscriptions)
           const { data, error } = await supabaseClient
             .from('profiles')
             .update({ is_paid: false })
-            .eq('stripe_customer_id', customerId);
+            .eq('stripe_customer_id', customerId)
+            .eq('payment_type', 'monthly'); // Only affect monthly subscriptions
 
           if (error) {
             logStep("Error updating payment status to unpaid", { error: error.message, customerId });
