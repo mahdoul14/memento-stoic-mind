@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -12,12 +11,15 @@ import { MementoMoriWidget } from "@/components/dashboard/MementoMoriWidget";
 import { DailyInspirationWidget } from "@/components/dashboard/DailyInspirationWidget";
 import { DailySummaryWidget } from "@/components/dashboard/DailySummaryWidget";
 import { BottomNavigation } from "@/components/dashboard/BottomNavigation";
+import { FloatingChat } from "@/components/chat/FloatingChat";
+import { useFloatingChat } from "@/hooks/useFloatingChat";
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const { user, signOut, loading: authLoading } = useAuth();
   const [animateCards, setAnimateCards] = useState(false);
   const [typingDots, setTypingDots] = useState('');
+  const { isOpen: isChatOpen, toggle: toggleChat, open: openChat } = useFloatingChat();
 
   // Journal widget state
   const [hasEntryToday, setHasEntryToday] = useState(false);
@@ -167,50 +169,59 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 text-black font-inter pb-20">
-      {/* Header */}
-      <DashboardHeader onSignOut={handleSignOut} />
+    <>
+      <div className="min-h-screen bg-gray-50 text-black font-inter pb-20">
+        {/* Header */}
+        <DashboardHeader onSignOut={handleSignOut} />
 
-      {/* Main Content */}
-      <div className="px-6 pt-6 space-y-6">
-        {/* Top Section - Main Actions */}
-        <div className="grid grid-cols-2 gap-4">
-          {/* MarcusGPT */}
-          <MarcusGPTWidget animateCards={animateCards} typingDots={typingDots} />
+        {/* Main Content */}
+        <div className="px-6 pt-6 space-y-6">
+          {/* Top Section - Main Actions */}
+          <div className="grid grid-cols-2 gap-4">
+            {/* MarcusGPT */}
+            <MarcusGPTWidget 
+              animateCards={animateCards} 
+              typingDots={typingDots} 
+              onOpenChat={openChat}
+            />
 
-          {/* Stoic Journal - Expandable */}
-          <JournalWidget 
+            {/* Stoic Journal - Expandable */}
+            <JournalWidget 
+              userId={user.id}
+              hasEntryToday={hasEntryToday}
+              checkingEntry={checkingEntry}
+              animateCards={animateCards}
+              onEntryCreated={handleJournalEntryCreated}
+            />
+          </div>
+
+          {/* Virtue Tracker Section */}
+          <VirtueTrackerWidget userId={user.id} animateCards={animateCards} />
+
+          {/* Memento Mori */}
+          <MementoMoriWidget 
             userId={user.id}
-            hasEntryToday={hasEntryToday}
-            checkingEntry={checkingEntry}
+            birthYear={birthYear}
+            age={age}
+            loadingProfile={loadingProfile}
             animateCards={animateCards}
-            onEntryCreated={handleJournalEntryCreated}
+            onBirthYearSaved={handleBirthYearSaved}
           />
+
+          {/* Daily Inspiration */}
+          <DailyInspirationWidget animateCards={animateCards} />
+
+          {/* Daily Summary */}
+          <DailySummaryWidget animateCards={animateCards} />
         </div>
 
-        {/* Virtue Tracker Section */}
-        <VirtueTrackerWidget userId={user.id} animateCards={animateCards} />
-
-        {/* Memento Mori */}
-        <MementoMoriWidget 
-          userId={user.id}
-          birthYear={birthYear}
-          age={age}
-          loadingProfile={loadingProfile}
-          animateCards={animateCards}
-          onBirthYearSaved={handleBirthYearSaved}
-        />
-
-        {/* Daily Inspiration */}
-        <DailyInspirationWidget animateCards={animateCards} />
-
-        {/* Daily Summary */}
-        <DailySummaryWidget animateCards={animateCards} />
+        {/* Bottom Navigation */}
+        <BottomNavigation />
       </div>
 
-      {/* Bottom Navigation */}
-      <BottomNavigation />
-    </div>
+      {/* Floating Chat */}
+      <FloatingChat isOpen={isChatOpen} onToggle={toggleChat} />
+    </>
   );
 };
 

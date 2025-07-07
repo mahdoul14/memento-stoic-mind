@@ -1,16 +1,14 @@
 
-import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
 interface MarcusGPTWidgetProps {
   animateCards: boolean;
   typingDots: string;
+  onOpenChat: () => void;
 }
 
-export const MarcusGPTWidget = ({ animateCards, typingDots }: MarcusGPTWidgetProps) => {
-  const navigate = useNavigate();
-
+export const MarcusGPTWidget = ({ animateCards, typingDots, onOpenChat }: MarcusGPTWidgetProps) => {
   return (
     <Card className={`bg-black text-white rounded-3xl shadow-lg transition-all duration-700 ease-out hover:shadow-xl hover:-translate-y-1 hover:bg-gray-900 ${
       animateCards ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
@@ -24,13 +22,10 @@ export const MarcusGPTWidget = ({ animateCards, typingDots }: MarcusGPTWidgetPro
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full hover:translate-x-full transition-transform duration-1000 pointer-events-none opacity-0 hover:opacity-100"></div>
         </div>
         <Button 
-          onClick={() => {
-            console.log('Navigating to Marcus page...');
-            navigate('/marcus');
-          }}
+          onClick={onOpenChat}
           className="w-full bg-white text-black hover:bg-gray-100 font-medium rounded-full transition-all duration-200 hover:scale-105"
         >
-          Reflect with Marcus
+          Open Chat
         </Button>
       </CardContent>
     </Card>
