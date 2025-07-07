@@ -19,11 +19,7 @@ export function useAuth() {
         setUser(session?.user ?? null)
         setLoading(false)
         
-        // Redirect to dashboard after successful sign in
-        if (event === 'SIGNED_IN' && session?.user) {
-          console.log('User signed in, redirecting to dashboard')
-          navigate('/dashboard')
-        }
+        // Don't auto-redirect on sign in - let the UI handle navigation
         
         // Redirect to home after sign out
         if (event === 'SIGNED_OUT') {
