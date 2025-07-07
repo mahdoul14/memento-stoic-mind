@@ -55,24 +55,18 @@ export const useChatMessages = ({ userId, limit = 5 }: UseChatMessagesProps) => 
     if (!userId) throw new Error('User not authenticated');
 
     try {
-      const response = await fetch('/functions/v1/chat-with-marcus', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${supabase.supabaseKey}`,
-        },
-        body: JSON.stringify({
+      const { data, error } = await supabase.functions.invoke('chat-with-marcus', {
+        body: {
           message,
           userId,
-        }),
+        },
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to send message');
+      if (error) {
+        console.error('Error invoking function:', error);
+        throw error;
       }
 
-      const data = await response.json();
-      
       // Refresh messages after successful send
       await fetchMessages(showAll);
       
