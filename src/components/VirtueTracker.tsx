@@ -1,170 +1,142 @@
 
-import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { toast } from '@/components/ui/use-toast';
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/components/ui/use-toast";
 
 interface VirtueTrackerProps {
   userId: string;
 }
 
 const virtues = [
-  { name: 'Courage', icon: '🛡️', description: 'Facing challenges bravely' },
-  { name: 'Wisdom', icon: '🧠', description: 'Making sound judgments' },
-  { name: 'Justice', icon: '⚖️', description: 'Acting fairly and righteously' },
-  { name: 'Temperance', icon: '🌿', description: 'Practicing moderation' }
+  { name: "Courage", key: "courage" as const, icon: "🛡️" },
+  { name: "Wisdom", key: "wisdom" as const, icon: "🧠" },
+  { name: "Justice", key: "justice" as const, icon: "⚖️" },
+  { name: "Temperance", key: "temperance" as const, icon: "🌿" }
 ];
 
 export const VirtueTracker = ({ userId }: VirtueTrackerProps) => {
-  const [ratings, setRatings] = useState<Record<string, number>>({});
-  const [loading, setLoading] = useState(false);
-  const [hasRatedToday, setHasRatedToday] = useState(false);
+  const [ratings, setRatings] = useState({
+    courage: 0,
+    wisdom: 0,
+    justice: 0,
+    temperance: 0
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Check if user has already rated today
-  useEffect(() => {
-    const checkTodaysRatings = async () => {
-      try {
-        const today = new Date().toISOString().split('T')[0];
-        const { data, error } = await supabase
-          .from('virtue_tracker')
-          .select('virtue, rating')
-          .eq('user_id', userId)
-          .eq('date', today);
-
-        if (error) {
-          console.error('Error checking today\'s ratings:', error);
-          return;
-        }
-
-        if (data && data.length > 0) {
-          setHasRatedToday(true);
-          const todaysRatings: Record<string, number> = {};
-          data.forEach(entry => {
-            if (entry.virtue && entry.rating) {
-              todaysRatings[entry.virtue] = entry.rating;
-            }
-          });
-          setRatings(todaysRatings);
-        }
-      } catch (error) {
-        console.error('Error checking today\'s ratings:', error);
-      }
-    };
-
-    if (userId) {
-      checkTodaysRatings();
-    }
-  }, [userId]);
-
-  const handleRatingChange = (virtue: string, rating: number) => {
-    setRatings(prev => ({ ...prev, [virtue]: rating }));
+  const handleRatingChange = (virtue: keyof typeof ratings, rating: number) => {
+    setRatings(prev => ({
+      ...prev,
+      [virtue]: rating
+    }));
   };
 
   const handleSubmit = async () => {
-    if (Object.keys(ratings).length === 0) {
+    // Check if all virtues have been rated
+    const unratedVirtues = Object.entries(ratings).filter(([_, rating]) => rating === 0);
+    if (unratedVirtues.length > 0) {
       toast({
-        title: "No ratings",
-        description: "Please rate at least one virtue before submitting.",
+        title: "Please rate all virtues",
+        description: "You need to provide a rating for each virtue before submitting.",
         variant: "destructive"
       });
       return;
     }
 
-    setLoading(true);
+    setIsSubmitting(true);
     try {
-      const today = new Date().toISOString().split('T')[0];
-      const entries = Object.entries(ratings).map(([virtue, rating]) => ({
-        user_id: userId,
-        virtue,
-        rating,
-        date: today,
-        created_at: new Date().toISOString()
-      }));
+      console.log('Submitting virtue ratings:', ratings);
+      
+      const { data, error } = await supabase
+        .from('virtue_entries')
+        .insert({
+          user_id: userId,
+          courage: ratings.courage,
+          wisdom: ratings.wisdom,
+          justice: ratings.justice,
+          temperance: ratings.temperance,
+          date: new Date().toISOString().split('T')[0]
+        })
+        .select();
 
-      const { error } = await supabase
-        .from('virtue_tracker')
-        .insert(entries);
+      console.log('Virtue submission result:', { data, error });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
 
-      setHasRatedToday(true);
+      // Reset ratings after successful submission
+      setRatings({
+        courage: 0,
+        wisdom: 0,
+        justice: 0,
+        temperance: 0
+      });
+
       toast({
-        title: "Virtues tracked!",
-        description: "Your daily virtue ratings have been saved.",
+        title: "Virtues tracked successfully",
+        description: "Your virtue ratings have been saved for today.",
       });
     } catch (error) {
       console.error('Error saving virtue ratings:', error);
       toast({
-        title: "Error",
-        description: "Failed to save your virtue ratings. Please try again.",
+        title: "Error saving ratings",
+        description: error instanceof Error ? error.message : "There was a problem saving your virtue ratings. Please try again.",
         variant: "destructive"
       });
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
-  if (hasRatedToday) {
-    return (
-      <div className="space-y-4">
-        <div className="text-center text-green-600 text-sm mb-4">
-          ✓ You've already tracked your virtues today.
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          {virtues.map(virtue => (
-            <div key={virtue.name} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-              <div className="flex items-center gap-2">
-                <span className="text-lg">{virtue.icon}</span>
-                <span className="text-sm font-medium">{virtue.name}</span>
-              </div>
-              <div className="text-sm text-gray-600">
-                {ratings[virtue.name] || 0}/5
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
-      {virtues.map(virtue => (
-        <div key={virtue.name} className="space-y-3">
-          <div className="flex items-center gap-3">
-            <span className="text-2xl">{virtue.icon}</span>
-            <div>
-              <h4 className="font-medium text-black">{virtue.name}</h4>
-              <p className="text-sm text-gray-600">{virtue.description}</p>
+      <div className="grid grid-cols-2 gap-6">
+        {virtues.map((virtue) => (
+          <div key={virtue.key} className="flex flex-col items-center space-y-3">
+            {/* Virtue Icon and Name */}
+            <div className="flex flex-col items-center space-y-1">
+              <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-lg hover:bg-gray-200 transition-colors duration-200">
+                {virtue.icon}
+              </div>
+              <span className="text-sm font-medium text-gray-800">{virtue.name}</span>
+            </div>
+
+            {/* Rating Dots */}
+            <div className="flex space-x-2">
+              {[1, 2, 3, 4, 5].map((rating) => (
+                <button
+                  key={rating}
+                  onClick={() => handleRatingChange(virtue.key, rating)}
+                  className={`w-4 h-4 rounded-full border-2 transition-all duration-200 hover:scale-110 ${
+                    ratings[virtue.key] >= rating
+                      ? 'bg-black border-black'
+                      : 'bg-white border-gray-300 hover:border-gray-400'
+                  }`}
+                  disabled={isSubmitting}
+                />
+              ))}
+            </div>
+
+            {/* Current Rating Display */}
+            <div className="text-xs text-gray-500">
+              {ratings[virtue.key] > 0 ? ratings[virtue.key] : '-'}/5
             </div>
           </div>
-          
-          <div className="flex gap-2">
-            {[1, 2, 3, 4, 5].map(rating => (
-              <button
-                key={rating}
-                onClick={() => handleRatingChange(virtue.name, rating)}
-                className={`w-8 h-8 rounded-full border-2 transition-all duration-200 ${
-                  ratings[virtue.name] >= rating
-                    ? 'bg-black border-black text-white'
-                    : 'border-gray-300 text-gray-400 hover:border-gray-400'
-                }`}
-              >
-                {rating}
-              </button>
-            ))}
-          </div>
-        </div>
-      ))}
-      
-      <Button 
-        onClick={handleSubmit}
-        disabled={loading || Object.keys(ratings).length === 0}
-        className="w-full bg-black text-white hover:bg-gray-800 font-medium rounded-full transition-all duration-200 hover:scale-105"
-      >
-        {loading ? 'Saving...' : 'Track My Virtues'}
-      </Button>
+        ))}
+      </div>
+
+      {/* Submit Button */}
+      <div className="flex justify-center pt-4">
+        <Button
+          onClick={handleSubmit}
+          disabled={isSubmitting || Object.values(ratings).every(rating => rating === 0)}
+          className="bg-black text-white hover:bg-gray-800 font-medium rounded-full px-8 py-2 transition-all duration-200 hover:scale-105 shadow-lg"
+        >
+          {isSubmitting ? 'Saving...' : 'Track Virtues'}
+        </Button>
+      </div>
     </div>
   );
 };

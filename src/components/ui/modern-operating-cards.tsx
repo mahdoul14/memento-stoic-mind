@@ -1,112 +1,134 @@
 
 "use client";
 
-import { motion } from "framer-motion";
-import { MessageCircle, BarChart3, Clock, BookOpen } from "lucide-react";
+import React from 'react';
+import { motion } from 'framer-motion';
+import { Brain, Globe, Zap, Shield } from 'lucide-react';
 
-const ModernOperatingCards = () => {
-  const tools = [
-    {
-      icon: MessageCircle,
-      title: "MarcusGPT",
-      description: "A Stoic AI that helps you reflect wisely, powered by GPT-4.",
-      gradient: "from-blue-500/10 to-purple-500/10",
-      iconColor: "text-blue-600",
-    },
-    {
-      icon: BarChart3,
-      title: "Virtue Tracker",
-      description: "Log your actions daily and track how well you're living your values.",
-      gradient: "from-green-500/10 to-emerald-500/10",
-      iconColor: "text-green-600",
-    },
-    {
-      icon: Clock,
-      title: "Memento Mori",
-      description: "A visual countdown of your weeks, to stay mindful of time.",
-      gradient: "from-orange-500/10 to-red-500/10",
-      iconColor: "text-orange-600",
-    },
-    {
-      icon: BookOpen,
-      title: "Stoic Journal",
-      description: "A guided journal to help you write, reflect, and stay grounded.",
-      gradient: "from-purple-500/10 to-pink-500/10",
-      iconColor: "text-purple-600",
-    },
-  ];
+interface CardData {
+  title: string;
+  description: string;
+  tagline: string;
+  icon: React.ComponentType<{ className?: string }>;
+  gradient: string;
+}
 
+const cardData: CardData[] = [
+  {
+    title: "MarcusGPT",
+    tagline: "Converse with ancient wisdom. Get modern clarity.",
+    description: "Ask life's hardest questions. Get answers from the Stoics. Built with GPT-4, fine-tuned to think like Marcus Aurelius.",
+    icon: Brain,
+    gradient: "from-blue-500/20 to-cyan-500/20"
+  },
+  {
+    title: "Memento Mori",
+    tagline: "A visual reminder of your mortality — and your purpose.",
+    description: "Track your life in weeks. Each dot reminds you to live with urgency, intention, and grace.",
+    icon: Globe,
+    gradient: "from-purple-500/20 to-pink-500/20"
+  },
+  {
+    title: "Stoic Journal",
+    tagline: "Reflect. Accept. Improve.",
+    description: "Capture your thoughts each day. Practice morning intention and evening reflection, just like the Stoics.",
+    icon: Zap,
+    gradient: "from-amber-500/20 to-orange-500/20"
+  },
+  {
+    title: "Virtue Tracker",
+    tagline: "Measure yourself by what matters.",
+    description: "Daily reflections on courage, temperance, wisdom, and justice. Let your actions show your growth.",
+    icon: Shield,
+    gradient: "from-emerald-500/20 to-teal-500/20"
+  }
+];
+
+const ModernOperatingCards: React.FC = () => {
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.1,
-        delayChildren: 0.2,
-      },
-    },
+        staggerChildren: 0.15,
+        delayChildren: 0.2
+      }
+    }
   };
 
   const cardVariants = {
     hidden: { 
       opacity: 0, 
-      y: 30 
+      y: 40,
+      scale: 0.95
     },
-    visible: { 
-      opacity: 1, 
+    visible: {
+      opacity: 1,
       y: 0,
+      scale: 1,
       transition: {
-        duration: 0.6,
-        ease: [0.6, -0.05, 0.01, 0.99],
-      },
-    },
+        duration: 0.8,
+        type: "spring" as const,
+        stiffness: 100,
+        damping: 15
+      }
+    }
   };
 
   return (
     <motion.div
-      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto"
+      className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto"
       variants={containerVariants}
       initial="hidden"
       whileInView="visible"
-      viewport={{ once: true, margin: "-100px" }}
+      viewport={{ once: true, margin: "-80px" }}
     >
-      {tools.map((tool, index) => {
-        const Icon = tool.icon;
-        return (
-          <motion.div
-            key={tool.title}
-            variants={cardVariants}
-            whileHover={{ 
-              scale: 1.05,
-              transition: { duration: 0.2 }
-            }}
-            className="group relative bg-white rounded-3xl p-8 transition-all duration-300 hover:shadow-2xl hover:shadow-black/5 border border-gray-100/50"
-          >
-            {/* Subtle gradient background on hover */}
-            <div className={`absolute inset-0 rounded-3xl bg-gradient-to-br ${tool.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
-            
-            {/* Glow effect on hover */}
-            <div className="absolute inset-0 rounded-3xl bg-white/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-xl" />
+      {cardData.map((card, index) => (
+        <motion.div
+          key={card.title}
+          variants={cardVariants}
+          whileHover={{ 
+            scale: 1.02,
+            y: -8,
+            transition: { duration: 0.3, type: "spring" as const, stiffness: 400 }
+          }}
+          className="group relative"
+        >
+          {/* Glass card with backdrop blur */}
+          <div className="relative p-8 rounded-2xl bg-white/70 backdrop-blur-xl border border-white/20 shadow-xl hover:shadow-2xl transition-all duration-500 hover:bg-white/80">
+            {/* Gradient overlay */}
+            <div className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${card.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
             
             {/* Content */}
             <div className="relative z-10">
+              {/* Icon */}
               <div className="mb-6">
-                <div className="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center group-hover:bg-white/80 transition-colors duration-300">
-                  <Icon className={`w-6 h-6 ${tool.iconColor}`} />
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                  <card.icon className="w-8 h-8 text-gray-700" />
                 </div>
               </div>
-              
-              <h3 className="font-semibold text-xl text-gray-900 mb-3 group-hover:text-gray-900 transition-colors duration-300">
-                {tool.title}
-              </h3>
-              
-              <p className="text-gray-600 text-sm leading-relaxed group-hover:text-gray-700 transition-colors duration-300">
-                {tool.description}
+
+              {/* Tagline */}
+              <p className="text-sm font-medium text-gray-500 mb-2 group-hover:text-gray-600 transition-colors duration-300">
+                {card.tagline}
               </p>
+
+              {/* Title */}
+              <h3 className="text-2xl font-bold text-gray-900 mb-4 group-hover:text-gray-800 transition-colors duration-300">
+                {card.title}
+              </h3>
+
+              {/* Description */}
+              <p className="text-gray-600 leading-relaxed group-hover:text-gray-700 transition-colors duration-300">
+                {card.description}
+              </p>
+
+              {/* Subtle glow effect */}
+              <div className="absolute -inset-1 bg-gradient-to-r from-transparent via-white/30 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm -z-10" />
             </div>
-          </motion.div>
-        );
-      })}
+          </div>
+        </motion.div>
+      ))}
     </motion.div>
   );
 };

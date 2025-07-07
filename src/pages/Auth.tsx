@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -61,10 +62,12 @@ const Auth = () => {
         } else {
           toast({
             title: "Account created!",
-            description: "Please check your email to verify your account, then you can access the paywall.",
+            description: "Please check your email to verify your account.",
           });
-          // Redirect new users to home page where they can then access paywall
-          navigate("/");
+          // Switch to sign in mode after successful signup
+          setIsSignUp(false);
+          setPassword("");
+          setConfirmPassword("");
         }
       } else {
         const { error } = await signInWithEmail(email, password);
@@ -87,8 +90,7 @@ const Auth = () => {
             title: "Welcome back!",
             description: "You have been signed in successfully.",
           });
-          // Existing users go to home, they'll be checked for subscription when accessing dashboard
-          navigate("/");
+          navigate("/dashboard");
         }
       }
     } catch (error) {

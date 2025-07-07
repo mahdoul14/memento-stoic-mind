@@ -8,90 +8,144 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const logStep = (step: string, details?: any) => {
+  const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
+  console.log(`[CREATE-CHECKOUT] ${step}${detailsStr}`);
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
-  const supabaseClient = createClient(
-    Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_ANON_KEY") ?? ""
-  );
-
   try {
-    const authHeader = req.headers.get("Authorization")!;
-    const token = authHeader.replace("Bearer ", "");
-    const { data } = await supabaseClient.auth.getUser(token);
-    const user = data.user;
-    if (!user?.email) throw new Error("User not authenticated or email not available");
+    logStep("Function started");
 
-    const { priceType } = await req.json();
+    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
+    if (!stripeKey) {
+      logStep("ERROR: STRIPE_SECRET_KEY not found");
+      throw new Error("STRIPE_SECRET_KEY is not set");
+    }
+    logStep("Stripe key verified");
 
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
-      apiVersion: "2023-10-16",
-    });
+    const requestBody = await req.json();
+    const { priceType, productId } = requestBody;
+    logStep("Request received", { priceType, productId });
 
-    const customers = await stripe.customers.list({ email: user.email, limit: 1 });
+    // Validate input
+    if (!priceType && !productId) {
+      throw new Error("Either priceType or productId is required");
+    }
+
+    // Try to get authenticated user, but don't require it for checkout
+    let user = null;
+    let customerEmail = "guest@example.com"; // Default for guest checkout
+    
+    const supabaseClient = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_ANON_KEY") ?? ""
+    );
+    
+    try {
+      const authHeader = req.headers.get("Authorization");
+      if (authHeader) {
+        const token = authHeader.replace("Bearer ", "");
+        const { data } = await supabaseClient.auth.getUser(token);
+        if (data.user?.email) {
+          user = data.user;
+          customerEmail = user.email;
+          logStep("User authenticated", { email: user.email });
+        }
+      }
+    } catch (error) {
+      logStep("No authentication or auth failed, proceeding as guest");
+    }
+
+    if (!user) {
+      logStep("Proceeding with guest checkout", { email: customerEmail });
+    }
+
+    const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
+    
+    // Check if customer already exists (only for authenticated users)
     let customerId;
-    if (customers.data.length > 0) {
-      customerId = customers.data[0].id;
+    if (user) {
+      try {
+        const customers = await stripe.customers.list({ email: user.email, limit: 1 });
+        if (customers.data.length > 0) {
+          customerId = customers.data[0].id;
+          logStep("Existing customer found", { customerId });
+        }
+      } catch (error) {
+        logStep("Error checking existing customer", { error: error.message });
+      }
     }
 
     const origin = req.headers.get("origin") || "http://localhost:3000";
-    
-    // Define prices based on type
-    const prices = {
-      monthly: {
-        unit_amount: 900, // £9.00 in pence
-        recurring: { interval: "month" as const },
-        mode: "subscription" as const
-      },
-      lifetime: {
-        unit_amount: 7900, // £79.00 in pence  
-        recurring: undefined,
-        mode: "payment" as const
-      }
-    };
+    let sessionConfig;
 
-    const selectedPrice = prices[priceType as keyof typeof prices];
-    if (!selectedPrice) {
-      throw new Error("Invalid price type");
+    // Map priceType to actual Stripe Price IDs
+    let stripePriceId;
+    let mode = "subscription";
+
+    if (priceType === 'monthly') {
+      stripePriceId = "price_1RhC5sRXLe0RB4dyrCmaHglP"; // £9/month
+      mode = "subscription";
+    } else if (priceType === 'lifetime') {
+      stripePriceId = "price_1RhC5PRXLe0RB4dy7iquDzVO"; // £79.99 one-time
+      mode = "payment";
+    } else if (productId) {
+      // If productId is provided directly, use it (assuming it's a price ID)
+      stripePriceId = productId;
+      mode = "subscription"; // Default, but could be overridden
+    } else {
+      throw new Error("Invalid price type or product ID");
     }
 
-    const sessionConfig: any = {
+    logStep("Using Stripe price", { priceId: stripePriceId, mode });
+
+    sessionConfig = {
       customer: customerId,
-      customer_email: customerId ? undefined : user.email,
-      line_items: [
-        {
-          price_data: {
-            currency: "gbp",
-            product_data: { 
-              name: priceType === 'monthly' ? "Premium Monthly Subscription" : "Premium Lifetime Access" 
-            },
-            unit_amount: selectedPrice.unit_amount,
-            ...(selectedPrice.recurring ? { recurring: selectedPrice.recurring } : {})
-          },
-          quantity: 1,
-        },
-      ],
-      mode: selectedPrice.mode,
-      success_url: `${origin}/dashboard`,
-      cancel_url: `${origin}/dashboard`,
-      metadata: {
-        user_id: user.id,
-        price_type: priceType
-      }
+      customer_email: customerId ? undefined : customerEmail,
+      line_items: [{
+        price: stripePriceId,
+        quantity: 1,
+      }],
+      mode: mode as "subscription" | "payment",
+      success_url: `${origin}/?success=true&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/?canceled=true`,
+      allow_promotion_codes: true,
+      billing_address_collection: 'required' as const,
     };
+
+    logStep("Creating checkout session", { config: sessionConfig });
 
     const session = await stripe.checkout.sessions.create(sessionConfig);
 
-    return new Response(JSON.stringify({ url: session.url }), {
+    logStep("Checkout session created successfully", { 
+      sessionId: session.id, 
+      url: session.url,
+      mode: session.mode 
+    });
+
+    return new Response(JSON.stringify({ 
+      url: session.url,
+      sessionId: session.id 
+    }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
   } catch (error) {
-    console.error('Error creating checkout:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    logStep("ERROR in create-checkout", { 
+      message: errorMessage, 
+      stack: error instanceof Error ? error.stack : undefined 
+    });
+    
+    return new Response(JSON.stringify({ 
+      error: errorMessage,
+      details: "Check the function logs for more information"
+    }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });
