@@ -1,27 +1,25 @@
 
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Clock, Lightbulb, Library, User, MessageCircle, TrendingUp, LogOut, Home, Lock } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
-import { BirthYearForm } from "@/components/BirthYearForm";
-import { MementoMoriGrid } from "@/components/MementoMoriGrid";
-import { VirtueTracker } from "@/components/VirtueTracker";
+import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
+import { MarcusGPTWidget } from "@/components/dashboard/MarcusGPTWidget";
+import { JournalWidget } from "@/components/dashboard/JournalWidget";
+import { VirtueTrackerWidget } from "@/components/dashboard/VirtueTrackerWidget";
+import { MementoMoriWidget } from "@/components/dashboard/MementoMoriWidget";
+import { DailyInspirationWidget } from "@/components/dashboard/DailyInspirationWidget";
+import { DailySummaryWidget } from "@/components/dashboard/DailySummaryWidget";
+import { BottomNavigation } from "@/components/dashboard/BottomNavigation";
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { user, session, signOut, loading: authLoading } = useAuth();
+  const { user, signOut, loading: authLoading } = useAuth();
   const [animateCards, setAnimateCards] = useState(false);
   const [typingDots, setTypingDots] = useState('');
 
   // Journal widget state
-  const [isJournalExpanded, setIsJournalExpanded] = useState(false);
-  const [journalText, setJournalText] = useState('');
-  const [isSaving, setIsSaving] = useState(false);
   const [hasEntryToday, setHasEntryToday] = useState(false);
   const [checkingEntry, setCheckingEntry] = useState(true);
 
@@ -128,49 +126,6 @@ const Dashboard = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Handle journal save
-  const handleSaveJournal = async () => {
-    if (!journalText.trim() || !user) return;
-    
-    setIsSaving(true);
-    try {
-      console.log('Attempting to save journal entry for user:', user.id);
-      
-      const { data, error } = await supabase
-        .from('journal_entries')
-        .insert({
-          user_id: user.id,
-          content: journalText.trim(),
-          date: new Date().toISOString().split('T')[0]
-        })
-        .select();
-
-      console.log('Journal save result:', { data, error });
-
-      if (error) {
-        console.error('Supabase error:', error);
-        throw error;
-      }
-
-      setJournalText('');
-      setIsJournalExpanded(false);
-      setHasEntryToday(true);
-      toast({
-        title: "Saved successfully",
-        description: "Your reflection has been saved.",
-      });
-    } catch (error) {
-      console.error('Error saving journal entry:', error);
-      toast({
-        title: "Error saving",
-        description: error instanceof Error ? error.message : "There was a problem saving your reflection. Please try again.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
   const handleBirthYearSaved = (year: number) => {
     setBirthYear(year);
     const currentYear = new Date().getFullYear();
@@ -193,6 +148,10 @@ const Dashboard = () => {
     }
   };
 
+  const handleJournalEntryCreated = () => {
+    setHasEntryToday(true);
+  };
+
   // Show loading while checking auth
   if (authLoading) {
     return (
@@ -207,285 +166,50 @@ const Dashboard = () => {
     return null;
   }
 
-  const virtues = [
-    { name: "Courage", icon: "🛡️", streak: 5 },
-    { name: "Wisdom", icon: "🧠", streak: 3 },
-    { name: "Justice", icon: "⚖️", streak: 7 },
-    { name: "Temperance", icon: "🌿", streak: 2 }
-  ];
-
-  const dailyQuote = {
-    text: "You have power over your mind - not outside events. Realize this, and you will find strength.",
-    author: "Marcus Aurelius"
-  };
-
   return (
     <div className="min-h-screen bg-gray-50 text-black font-inter pb-20">
       {/* Header */}
-      <div className="flex justify-between items-center p-6 bg-white shadow-sm">
-        <div>
-          <h1 className="text-2xl font-bold text-black">Good morning.</h1>
-          <p className="text-gray-500 text-sm mt-1">Let's make today meaningful</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-black rounded-full flex items-center justify-center">
-            <div className="w-4 h-4 bg-white rounded-full"></div>
-          </div>
-          <Button
-            onClick={handleSignOut}
-            variant="ghost"
-            size="sm"
-            className="text-gray-600 hover:text-black hover:bg-gray-100 transition-all duration-200 hover:scale-105"
-          >
-            <LogOut size={16} />
-          </Button>
-        </div>
-      </div>
+      <DashboardHeader onSignOut={handleSignOut} />
 
       {/* Main Content */}
       <div className="px-6 pt-6 space-y-6">
         {/* Top Section - Main Actions */}
         <div className="grid grid-cols-2 gap-4">
           {/* MarcusGPT */}
-          <Card className={`bg-black text-white rounded-3xl shadow-lg transition-all duration-700 ease-out hover:shadow-xl hover:-translate-y-1 hover:bg-gray-900 ${
-            animateCards ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
-          }`} style={{ animationDelay: '0.1s' }}>
-            <CardContent className="p-6 relative overflow-hidden">
-              <div className="mb-4">
-                <h3 className="text-lg font-bold mb-2">Talk to Marcus</h3>
-                <div className="text-gray-300 text-sm leading-relaxed mb-2">
-                  "Reflect on your day with Stoic wisdom and guidance{typingDots}"
-                </div>
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full hover:translate-x-full transition-transform duration-1000 pointer-events-none opacity-0 hover:opacity-100"></div>
-              </div>
-              <Button 
-                onClick={() => {
-                  console.log('Navigating to Marcus page...');
-                  navigate('/marcus');
-                }}
-                className="w-full bg-white text-black hover:bg-gray-100 font-medium rounded-full transition-all duration-200 hover:scale-105"
-              >
-                Reflect with Marcus
-              </Button>
-            </CardContent>
-          </Card>
+          <MarcusGPTWidget animateCards={animateCards} typingDots={typingDots} />
 
           {/* Stoic Journal - Expandable */}
-          <Card className={`bg-white rounded-3xl shadow-lg border-0 transition-all duration-700 ease-out hover:shadow-xl hover:-translate-y-1 ${
-            animateCards ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
-          } ${isJournalExpanded ? 'row-span-2' : ''}`} style={{ animationDelay: '0.2s' }}>
-            <CardContent className="p-6 relative overflow-hidden">
-              <div className="mb-4">
-                <h3 className="text-lg font-bold mb-2">Today's Journal</h3>
-                {checkingEntry ? (
-                  <div className="text-gray-600 text-sm leading-relaxed">
-                    Checking today's entry...
-                  </div>
-                ) : hasEntryToday ? (
-                  <div className="text-green-600 text-sm leading-relaxed">
-                    ✓ You've already written your entry for today.
-                  </div>
-                ) : (
-                  <div className="text-gray-600 text-sm leading-relaxed relative">
-                    <span className="hover:bg-gradient-to-r hover:from-gray-600 hover:via-gray-400 hover:to-gray-600 hover:bg-clip-text hover:text-transparent transition-all duration-300">
-                      "What challenged your patience today?"
-                    </span>
-                  </div>
-                )}
-              </div>
-              
-              {/* Expandable content */}
-              <div className={`transition-all duration-400 ease-out overflow-hidden ${
-                isJournalExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-              }`}>
-                <div className="space-y-4 pt-4">
-                  <Textarea
-                    value={journalText}
-                    onChange={(e) => setJournalText(e.target.value)}
-                    placeholder="Write your thoughts here..."
-                    className="min-h-[120px] resize-none border-gray-200 focus:border-black focus:ring-black"
-                  />
-                  <div className="flex gap-2">
-                    <Button
-                      onClick={handleSaveJournal}
-                      disabled={!journalText.trim() || isSaving}
-                      className="bg-black text-white hover:bg-gray-800 font-medium rounded-full transition-all duration-200 hover:scale-105"
-                    >
-                      {isSaving ? 'Saving...' : 'Save Reflection'}
-                    </Button>
-                    <Button
-                      onClick={() => {
-                        setIsJournalExpanded(false);
-                        setJournalText('');
-                      }}
-                      variant="outline"
-                      className="border-gray-300 text-gray-700 hover:bg-gray-50 rounded-full transition-all duration-200"
-                    >
-                      Cancel
-                    </Button>
-                  </div>
-                </div>
-              </div>
-              
-              {!isJournalExpanded && !hasEntryToday && !checkingEntry && (
-                <Button 
-                  onClick={() => setIsJournalExpanded(true)}
-                  variant="outline" 
-                  className="w-full border-2 border-black text-black hover:bg-black hover:text-white font-medium rounded-full transition-all duration-200 hover:scale-105"
-                >
-                  Write Now
-                </Button>
-              )}
-            </CardContent>
-          </Card>
+          <JournalWidget 
+            userId={user.id}
+            hasEntryToday={hasEntryToday}
+            checkingEntry={checkingEntry}
+            animateCards={animateCards}
+            onEntryCreated={handleJournalEntryCreated}
+          />
         </div>
 
         {/* Virtue Tracker Section */}
-        <Card className={`bg-white rounded-3xl shadow-lg border-0 transition-all duration-700 ease-out hover:shadow-xl hover:-translate-y-1 ${
-          animateCards ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
-        }`} style={{ animationDelay: '0.3s' }}>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 bg-gray-100 rounded-lg transition-transform duration-200 hover:scale-110">
-                <TrendingUp className="w-5 h-5 text-black" />
-              </div>
-              <h3 className="text-lg font-bold text-black">Virtue Tracker</h3>
-            </div>
-            
-            <p className="text-gray-700 text-sm mb-6">Rate yourself on the four Stoic virtues today.</p>
-            
-            <VirtueTracker userId={user.id} />
-          </CardContent>
-        </Card>
+        <VirtueTrackerWidget userId={user.id} animateCards={animateCards} />
 
         {/* Memento Mori */}
-        <Card className={`bg-white rounded-3xl shadow-lg border-0 transition-all duration-700 ease-out hover:shadow-xl hover:-translate-y-1 ${
-          animateCards ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
-        }`} style={{ animationDelay: '0.4s' }}>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-gray-100 rounded-lg transition-transform duration-200 hover:scale-110">
-                <Clock className="w-5 h-5 text-black" />
-              </div>
-              <h3 className="text-lg font-bold text-black">Memento Mori</h3>
-            </div>
-            
-            <p className="text-gray-700 text-sm mb-4">A visual reminder that time is finite.</p>
-            
-            {loadingProfile ? (
-              <div className="text-gray-500 text-sm">Loading your timeline...</div>
-            ) : !birthYear ? (
-              <div className="space-y-6">
-                {/* Show empty grid first */}
-                <div className="grid grid-cols-10 gap-2 justify-center max-w-[240px] mx-auto">
-                  {[...Array(100)].map((_, index) => (
-                    <div
-                      key={index}
-                      className="w-5 h-5 rounded-full bg-gray-100 border border-gray-300"
-                    />
-                  ))}
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-black">0</div>
-                  <div className="text-sm text-gray-500 mb-4">weeks lived</div>
-                  <div className="text-gray-500 text-sm text-center mb-4">
-                    Enter your birth year to view your timeline.
-                  </div>
-                </div>
-                <BirthYearForm userId={user.id} onBirthYearSaved={handleBirthYearSaved} />
-              </div>
-            ) : (
-              <MementoMoriGrid age={age} />
-            )}
-          </CardContent>
-        </Card>
+        <MementoMoriWidget 
+          userId={user.id}
+          birthYear={birthYear}
+          age={age}
+          loadingProfile={loadingProfile}
+          animateCards={animateCards}
+          onBirthYearSaved={handleBirthYearSaved}
+        />
 
         {/* Daily Inspiration */}
-        <Card className={`bg-white rounded-3xl shadow-lg border-0 transition-all duration-700 ease-out hover:shadow-xl hover:-translate-y-1 ${
-          animateCards ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
-        }`} style={{ animationDelay: '0.5s' }}>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-gray-100 rounded-lg transition-transform duration-200 hover:scale-110">
-                <Lightbulb className="w-5 h-5 text-black" />
-              </div>
-              <h3 className="text-lg font-bold text-black">Daily Inspiration</h3>
-            </div>
-            
-            <div className="bg-gray-50 rounded-2xl p-4 mb-4 transition-all duration-300 hover:bg-gray-100">
-              <p className="text-gray-800 text-sm leading-relaxed italic mb-3">
-                "{dailyQuote.text}"
-              </p>
-              <p className="text-gray-500 text-xs text-right">— {dailyQuote.author}</p>
-            </div>
-          </CardContent>
-        </Card>
+        <DailyInspirationWidget animateCards={animateCards} />
 
         {/* Daily Summary */}
-        <Card className={`bg-white rounded-3xl shadow-lg border-0 transition-all duration-700 ease-out hover:shadow-xl hover:-translate-y-1 ${
-          animateCards ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
-        }`} style={{ animationDelay: '0.6s' }}>
-          <CardContent className="p-6">
-            <h3 className="text-lg font-bold text-black mb-4">Daily Summary</h3>
-            
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-gray-600 text-sm">How are you feeling?</span>
-                <div className="flex gap-2">
-                  {['😊', '😐', '😔', '😤', '😌'].map((emoji, i) => (
-                    <button 
-                      key={i} 
-                      className="text-lg hover:scale-125 transition-transform duration-200 hover:rotate-12"
-                      style={{ transitionDelay: `${i * 50}ms` }}
-                    >
-                      {emoji}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <span className="text-gray-600 text-sm">Sleep hours</span>
-                <span className="text-black font-medium">7.5h</span>
-              </div>
-              
-              <div className="pt-2 border-t border-gray-100">
-                <p className="text-gray-500 text-xs text-center">
-                  Remember to reflect on your day before sleep
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <DailySummaryWidget animateCards={animateCards} />
       </div>
 
       {/* Bottom Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-6 py-4 shadow-lg">
-        <div className="flex justify-between items-center max-w-sm mx-auto">
-          <button className="flex flex-col items-center gap-1 p-2 transition-transform duration-200 hover:scale-110">
-            <Home className="w-5 h-5 text-black" />
-            <span className="text-xs text-black font-medium">Today</span>
-          </button>
-          <button className="flex flex-col items-center gap-1 p-2 transition-transform duration-200 hover:scale-110">
-            <Lightbulb className="w-5 h-5 text-gray-400 hover:text-gray-600 transition-colors duration-200" />
-            <span className="text-xs text-gray-400 hover:text-gray-600 transition-colors duration-200">Inspirations</span>
-          </button>
-          <button className="w-12 h-12 bg-black rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 hover:bg-gray-800">
-            <div className="w-6 h-6 flex items-center justify-center">
-              <div className="w-4 h-0.5 bg-white"></div>
-              <div className="w-0.5 h-4 bg-white absolute"></div>
-            </div>
-          </button>
-          <button className="flex flex-col items-center gap-1 p-2 transition-transform duration-200 hover:scale-110">
-            <Library className="w-5 h-5 text-gray-400 hover:text-gray-600 transition-colors duration-200" />
-            <span className="text-xs text-gray-400 hover:text-gray-600 transition-colors duration-200">Library</span>
-          </button>
-          <button className="flex flex-col items-center gap-1 p-2 transition-transform duration-200 hover:scale-110">
-            <TrendingUp className="w-5 h-5 text-gray-400 hover:text-gray-600 transition-colors duration-200" />
-            <span className="text-xs text-gray-400 hover:text-gray-600 transition-colors duration-200">Journey</span>
-          </button>
-        </div>
-      </div>
+      <BottomNavigation />
     </div>
   );
 };
