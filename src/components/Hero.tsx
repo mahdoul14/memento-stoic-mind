@@ -1,12 +1,13 @@
-
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
+import { useNavigate } from "react-router-dom";
 
 const Hero = () => {
   const { ref: leftPhoneRef, isVisible: leftPhoneVisible } = useScrollAnimation();
   const { ref: rightPhoneRef, isVisible: rightPhoneVisible } = useScrollAnimation();
   const { ref: heroTextRef, isVisible: heroTextVisible } = useScrollAnimation();
+  const navigate = useNavigate();
 
   return (
     <section className="bg-white py-24 lg:py-32">
@@ -29,7 +30,10 @@ const Hero = () => {
             Influenced by the great minds
           </p>
           
-          <Button className="bg-black text-white hover:bg-gray-800 hover:scale-105 hover:shadow-lg rounded-full px-8 py-4 text-lg font-inter font-medium mb-16 group transition-all duration-200 ease-in-out">
+          <Button 
+            onClick={() => navigate('/dashboard')}
+            className="bg-black text-white hover:bg-gray-800 hover:scale-105 hover:shadow-lg rounded-full px-8 py-4 text-lg font-inter font-medium mb-16 group transition-all duration-200 ease-in-out"
+          >
             Enter the Temple
             <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
           </Button>
