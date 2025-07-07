@@ -75,19 +75,9 @@ serve(async (req) => {
         if (customers.data.length > 0) {
           customerId = customers.data[0].id;
           logStep("Existing customer found", { customerId });
-        } else {
-          // Create new customer if none exists
-          const customer = await stripe.customers.create({
-            email: user.email,
-            metadata: {
-              supabase_user_id: user.id
-            }
-          });
-          customerId = customer.id;
-          logStep("New customer created", { customerId });
         }
       } catch (error) {
-        logStep("Error with customer handling", { error: error.message });
+        logStep("Error checking existing customer", { error: error.message });
       }
     }
 
