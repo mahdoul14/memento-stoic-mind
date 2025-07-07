@@ -3,41 +3,14 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { useSubscription } from "@/hooks/useSubscription";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user, signOut } = useAuth();
-  const { subscribed, loading: subscriptionLoading } = useSubscription();
   const navigate = useNavigate();
   const { toast } = useToast();
-
-  const handleDashboardClick = () => {
-    if (!user) {
-      // Not signed in - redirect to auth
-      navigate("/auth");
-      return;
-    }
-
-    if (subscriptionLoading) {
-      toast({
-        title: "Loading...",
-        description: "Checking your subscription status",
-      });
-      return;
-    }
-
-    if (!subscribed) {
-      // Signed in but not subscribed - show paywall in dashboard
-      navigate("/dashboard");
-      return;
-    }
-
-    // Signed in and subscribed - full access
-    navigate("/dashboard");
-  };
 
   const handleSignOut = async () => {
     try {
@@ -73,15 +46,15 @@ const Header = () => {
             <a href="#pricing" className="text-gray-600 hover:text-black transition-colors">
               Pricing
             </a>
-            <Button
-              onClick={handleDashboardClick}
-              variant="outline"
-              className="border-black text-black hover:bg-black hover:text-white"
-            >
-              Dashboard
-            </Button>
             {user ? (
               <div className="flex items-center space-x-4">
+                <Button
+                  onClick={() => navigate("/dashboard")}
+                  variant="outline"
+                  className="border-black text-black hover:bg-black hover:text-white"
+                >
+                  Dashboard
+                </Button>
                 <span className="text-sm text-gray-600">
                   {user.email}
                 </span>
@@ -131,18 +104,18 @@ const Header = () => {
               >
                 Pricing
               </a>
-              <Button
-                onClick={() => {
-                  handleDashboardClick();
-                  setIsMenuOpen(false);
-                }}
-                variant="outline"
-                className="border-black text-black hover:bg-black hover:text-white w-full"
-              >
-                Dashboard
-              </Button>
               {user ? (
                 <div className="flex flex-col space-y-2">
+                  <Button
+                    onClick={() => {
+                      navigate("/dashboard");
+                      setIsMenuOpen(false);
+                    }}
+                    variant="outline"
+                    className="border-black text-black hover:bg-black hover:text-white w-full"
+                  >
+                    Dashboard
+                  </Button>
                   <span className="text-sm text-gray-600">
                     {user.email}
                   </span>
