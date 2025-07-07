@@ -128,6 +128,35 @@ serve(async (req) => {
       mode: session.mode 
     });
 
+    // Store the stripe_customer_id in the user's profile for webhook matching
+    if (user && session.customer) {
+      const supabaseService = createClient(
+        Deno.env.get("SUPABASE_URL") ?? "",
+        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+        { auth: { persistSession: false } }
+      );
+
+      const { error: profileError } = await supabaseService
+        .from('profiles')
+        .upsert({ 
+          user_id: user.id, 
+          stripe_customer_id: session.customer as string 
+        }, { onConflict: 'user_id' });
+
+      if (profileError) {
+        logStep("Warning: Failed to update profile with stripe_customer_id", { 
+          error: profileError.message, 
+          userId: user.id,
+          customerId: session.customer 
+        });
+      } else {
+        logStep("Successfully stored stripe_customer_id in profile", { 
+          userId: user.id, 
+          customerId: session.customer 
+        });
+      }
+    }
+
     return new Response(JSON.stringify({ 
       url: session.url,
       sessionId: session.id 
