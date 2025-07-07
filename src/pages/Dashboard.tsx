@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -22,6 +21,10 @@ const Dashboard = () => {
   const [typingDots, setTypingDots] = useState('');
   const { isOpen: isChatOpen, toggle: toggleChat, open: openChat } = useFloatingChat();
 
+  // Payment status
+  const [isPaid, setIsPaid] = useState(false);
+  const [checkingPayment, setCheckingPayment] = useState(true);
+
   // Journal widget state
   const [hasEntryToday, setHasEntryToday] = useState(false);
   const [checkingEntry, setCheckingEntry] = useState(true);
@@ -35,14 +38,59 @@ const Dashboard = () => {
   useEffect(() => {
     if (!authLoading && !user) {
       console.log('No user found, redirecting to auth');
-      navigate('/auth');
+      navigate('/');
     }
   }, [user, authLoading, navigate]);
+
+  // Check payment status
+  useEffect(() => {
+    const checkPaymentStatus = async () => {
+      if (!user) return;
+
+      setCheckingPayment(true);
+      try {
+        console.log('Checking payment status for user:', user.id);
+        
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('is_paid')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        console.log('Payment status result:', { data, error });
+
+        if (error) {
+          console.error('Error checking payment status:', error);
+          navigate('/');
+        } else if (data) {
+          if (!data.is_paid) {
+            console.log('User not paid, redirecting to home');
+            navigate('/');
+          } else {
+            setIsPaid(true);
+          }
+        } else {
+          // No profile exists, redirect to home
+          console.log('No profile found, redirecting to home');
+          navigate('/');
+        }
+      } catch (error) {
+        console.error('Error checking payment status:', error);
+        navigate('/');
+      } finally {
+        setCheckingPayment(false);
+      }
+    };
+
+    if (user) {
+      checkPaymentStatus();
+    }
+  }, [user, navigate]);
 
   // Fetch user profile data
   useEffect(() => {
     const fetchProfile = async () => {
-      if (!user) return;
+      if (!user || !isPaid) return;
 
       setLoadingProfile(true);
       try {
@@ -71,15 +119,15 @@ const Dashboard = () => {
       }
     };
 
-    if (user) {
+    if (user && isPaid) {
       fetchProfile();
     }
-  }, [user]);
+  }, [user, isPaid]);
 
   // Check for existing journal entry today
   useEffect(() => {
     const checkTodaysEntry = async () => {
-      if (!user) return;
+      if (!user || !isPaid) return;
 
       setCheckingEntry(true);
       try {
@@ -107,10 +155,10 @@ const Dashboard = () => {
       }
     };
 
-    if (user) {
+    if (user && isPaid) {
       checkTodaysEntry();
     }
-  }, [user]);
+  }, [user, isPaid]);
 
   // Trigger staggered animations after mount
   useEffect(() => {
@@ -155,8 +203,8 @@ const Dashboard = () => {
     setHasEntryToday(true);
   };
 
-  // Show loading while checking auth
-  if (authLoading) {
+  // Show loading while checking auth or payment
+  if (authLoading || checkingPayment) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-lg text-gray-600">Loading...</div>
@@ -164,8 +212,8 @@ const Dashboard = () => {
     );
   }
 
-  // Don't render if not authenticated
-  if (!user) {
+  // Don't render if not authenticated or not paid
+  if (!user || !isPaid) {
     return null;
   }
 
