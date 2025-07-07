@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
@@ -92,7 +91,7 @@ const Dashboard = () => {
         
         const today = new Date().toISOString().split('T')[0];
         const { data, error } = await supabase
-          .from('journal_entries.csv')
+          .from('journal_entries')
           .select('id')
           .eq('user_id', user.id)
           .eq('date', today)
@@ -143,10 +142,10 @@ const Dashboard = () => {
       console.log('Attempting to save journal entry for user:', user.id);
       
       const { data, error } = await supabase
-        .from('journal_entries.csv')
+        .from('journal_entries')
         .insert({
           user_id: user.id,
-          content: journalText.trim(),
+          entry_text: journalText.trim(),
           date: new Date().toISOString().split('T')[0]
         })
         .select();

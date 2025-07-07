@@ -19,10 +19,11 @@ export function useAuth() {
         setUser(session?.user ?? null)
         setLoading(false)
         
-        // After successful sign in, redirect to dashboard
+        // After successful sign in, redirect to home (not dashboard)
+        // User will need to click Dashboard and be checked for subscription
         if (event === 'SIGNED_IN' && session?.user) {
-          console.log('User signed in, redirecting to dashboard')
-          navigate('/dashboard')
+          console.log('User signed in, redirecting to home')
+          navigate('/')
         }
         
         // Redirect to home after sign out
@@ -49,7 +50,7 @@ export function useAuth() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/dashboard`
+          redirectTo: `${window.location.origin}/`
         }
       })
       if (error) throw error
@@ -80,7 +81,7 @@ export function useAuth() {
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/dashboard`
+          emailRedirectTo: `${window.location.origin}/`
         }
       })
       console.log('Sign up result:', data, error)

@@ -37,41 +37,48 @@ serve(async (req) => {
       throw new Error("Either priceType or productId is required");
     }
 
-    // Get authenticated user (required for proper user flow)
+    // Try to get authenticated user, but don't require it for checkout
+    let user = null;
+    let customerEmail = "guest@example.com"; // Default for guest checkout
+    
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_ANON_KEY") ?? ""
     );
     
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      logStep("ERROR: No authorization header");
-      throw new Error("Authentication required");
+    try {
+      const authHeader = req.headers.get("Authorization");
+      if (authHeader) {
+        const token = authHeader.replace("Bearer ", "");
+        const { data } = await supabaseClient.auth.getUser(token);
+        if (data.user?.email) {
+          user = data.user;
+          customerEmail = user.email;
+          logStep("User authenticated", { email: user.email });
+        }
+      }
+    } catch (error) {
+      logStep("No authentication or auth failed, proceeding as guest");
     }
 
-    const token = authHeader.replace("Bearer ", "");
-    const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
-    
-    if (userError || !userData.user) {
-      logStep("ERROR: Authentication failed", { error: userError });
-      throw new Error("Authentication failed");
+    if (!user) {
+      logStep("Proceeding with guest checkout", { email: customerEmail });
     }
-
-    const user = userData.user;
-    logStep("User authenticated", { email: user.email, userId: user.id });
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
     
-    // Check if customer already exists
+    // Check if customer already exists (only for authenticated users)
     let customerId;
-    try {
-      const customers = await stripe.customers.list({ email: user.email, limit: 1 });
-      if (customers.data.length > 0) {
-        customerId = customers.data[0].id;
-        logStep("Existing customer found", { customerId });
+    if (user) {
+      try {
+        const customers = await stripe.customers.list({ email: user.email, limit: 1 });
+        if (customers.data.length > 0) {
+          customerId = customers.data[0].id;
+          logStep("Existing customer found", { customerId });
+        }
+      } catch (error) {
+        logStep("Error checking existing customer", { error: error.message });
       }
-    } catch (error) {
-      logStep("Error checking existing customer", { error: error.message });
     }
 
     const origin = req.headers.get("origin") || "http://localhost:3000";
@@ -99,20 +106,16 @@ serve(async (req) => {
 
     sessionConfig = {
       customer: customerId,
-      customer_email: customerId ? undefined : user.email,
+      customer_email: customerId ? undefined : customerEmail,
       line_items: [{
         price: stripePriceId,
         quantity: 1,
       }],
       mode: mode as "subscription" | "payment",
-      success_url: `${origin}/dashboard?success=true&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/dashboard?canceled=true`,
+      success_url: `${origin}/?success=true&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/?canceled=true`,
       allow_promotion_codes: true,
       billing_address_collection: 'required' as const,
-      metadata: {
-        user_id: user.id, // Add user_id to metadata for webhook processing
-        user_email: user.email,
-      },
     };
 
     logStep("Creating checkout session", { config: sessionConfig });
@@ -122,8 +125,7 @@ serve(async (req) => {
     logStep("Checkout session created successfully", { 
       sessionId: session.id, 
       url: session.url,
-      mode: session.mode,
-      metadata: session.metadata
+      mode: session.mode 
     });
 
     return new Response(JSON.stringify({ 
