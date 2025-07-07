@@ -29,12 +29,12 @@ serve(async (req) => {
     logStep("Stripe key verified");
 
     const requestBody = await req.json();
-    const { priceType, productId } = requestBody;
-    logStep("Request received", { priceType, productId });
+    const { priceType } = requestBody;
+    logStep("Request received", { priceType });
 
     // Validate input
-    if (!priceType && !productId) {
-      throw new Error("Either priceType or productId is required");
+    if (!priceType) {
+      throw new Error("priceType is required");
     }
 
     // Try to get authenticated user, but don't require it for checkout
@@ -84,25 +84,21 @@ serve(async (req) => {
     const origin = req.headers.get("origin") || "http://localhost:3000";
     let sessionConfig;
 
-    // Map priceType to actual Stripe Price IDs
+    // Map priceType to actual Stripe Price IDs and set correct mode
     let stripePriceId;
-    let mode = "subscription";
+    let mode;
 
     if (priceType === 'monthly') {
-      stripePriceId = "price_1RhC5sRXLe0RB4dyrCmaHglP"; // £9/month
+      stripePriceId = "price_1RhC5sRXLe0RB4dyrCmaHglP"; // Monthly subscription
       mode = "subscription";
     } else if (priceType === 'lifetime') {
-      stripePriceId = "price_1RhC5PRXLe0RB4dy7iquDzVO"; // £79.99 one-time
+      stripePriceId = "price_1RhC5PRXLe0RB4dy7iquDzVO"; // One-time payment
       mode = "payment";
-    } else if (productId) {
-      // If productId is provided directly, use it (assuming it's a price ID)
-      stripePriceId = productId;
-      mode = "subscription"; // Default, but could be overridden
     } else {
-      throw new Error("Invalid price type or product ID");
+      throw new Error("Invalid price type. Must be 'monthly' or 'lifetime'");
     }
 
-    logStep("Using Stripe price", { priceId: stripePriceId, mode });
+    logStep("Using Stripe price", { priceId: stripePriceId, mode, priceType });
 
     sessionConfig = {
       customer: customerId,
@@ -117,7 +113,7 @@ serve(async (req) => {
       allow_promotion_codes: true,
       billing_address_collection: 'required' as const,
       metadata: {
-        payment_type: priceType || 'unknown',
+        payment_type: priceType,
         user_id: user?.id || 'guest'
       }
     };

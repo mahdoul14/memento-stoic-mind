@@ -85,6 +85,8 @@ serve(async (req) => {
             paymentType = "lifetime";
           }
           
+          logStep("Determined payment type", { mode: session.mode, paymentType });
+          
           // Update profile with payment information
           const { data, error } = await supabaseClient
             .from('profiles')
