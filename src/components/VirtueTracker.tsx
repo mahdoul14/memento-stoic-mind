@@ -58,39 +58,23 @@ export const VirtueTracker = ({ userId }: VirtueTrackerProps) => {
     try {
       const today = new Date().toISOString().split('T')[0];
       
-      // First check if an entry already exists
-      const { data: existingData, error: fetchError } = await supabase
+      // Use upsert with proper conflict resolution
+      const { error } = await supabase
         .from('virtue_tracker')
-        .select('id')
-        .eq('user_id', userId)
-        .eq('virtue', virtue)
-        .eq('date', today)
-        .maybeSingle();
+        .upsert({
+          user_id: userId,
+          virtue: virtue,
+          rating: rating,
+          date: today
+        }, {
+          onConflict: 'user_id,virtue,date',
+          ignoreDuplicates: false
+        });
 
-      if (fetchError) throw fetchError;
-
-      let result;
-      if (existingData) {
-        // Update existing entry
-        result = await supabase
-          .from('virtue_tracker')
-          .update({ rating: rating })
-          .eq('user_id', userId)
-          .eq('virtue', virtue)
-          .eq('date', today);
-      } else {
-        // Insert new entry
-        result = await supabase
-          .from('virtue_tracker')
-          .insert({
-            user_id: userId,
-            virtue: virtue,
-            rating: rating,
-            date: today
-          });
+      if (error) {
+        console.error('Upsert error:', error);
+        throw error;
       }
-
-      if (result.error) throw result.error;
 
       setTodaysRatings(prev => ({ ...prev, [virtue]: rating }));
       
