@@ -68,21 +68,21 @@ export type Database = {
           created_at: string
           id: number
           is_paid: boolean | null
-          user_id: string | null
+          user_id: string
         }
         Insert: {
           birth_year?: number | null
           created_at?: string
           id?: number
           is_paid?: boolean | null
-          user_id?: string | null
+          user_id: string
         }
         Update: {
           birth_year?: number | null
           created_at?: string
           id?: number
           is_paid?: boolean | null
-          user_id?: string | null
+          user_id?: string
         }
         Relationships: []
       }
