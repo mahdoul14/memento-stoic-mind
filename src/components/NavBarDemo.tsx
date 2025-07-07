@@ -10,9 +10,11 @@ import { useState } from "react"
 
 export function NavBarDemo() {
   const { user } = useAuth()
-  const { isPaid } = usePaymentStatus()
+  const { isPaid, refreshPaymentStatus, loading } = usePaymentStatus()
   const navigate = useNavigate()
   const [showPaymentModal, setShowPaymentModal] = useState(false)
+
+  console.log('[NAVBAR] User:', user?.email, 'isPaid:', isPaid, 'loading:', loading);
 
   const navItems = [
     { name: 'Tools', url: '#tools', icon: Briefcase },
@@ -40,12 +42,23 @@ export function NavBarDemo() {
     <>
       <div className="relative">
         <NavBar items={navItems} />
-        <div className="fixed top-6 right-6 z-50">
+        <div className="fixed top-6 right-6 z-50 flex gap-2">
+          {user && (
+            <Button
+              onClick={refreshPaymentStatus}
+              variant="outline"
+              className="px-3 py-2 text-sm"
+              disabled={loading}
+            >
+              🔄
+            </Button>
+          )}
           <Button
             onClick={handleAuthClick}
             className="bg-black text-white font-semibold px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors"
+            disabled={loading}
           >
-            {user ? 'Go to Dashboard' : 'Sign In'} →
+            {user ? (loading ? 'Checking...' : 'Go to Dashboard') : 'Sign In'} →
           </Button>
         </div>
       </div>
