@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -61,10 +62,9 @@ const Auth = () => {
         } else {
           toast({
             title: "Account created!",
-            description: "Please check your email to verify your account, then you can access the paywall.",
+            description: "Please check your email to verify your account, then you can access the dashboard.",
           });
-          // Redirect new users to home page where they can then access paywall
-          navigate("/");
+          // User will be redirected to dashboard after email verification
         }
       } else {
         const { error } = await signInWithEmail(email, password);
@@ -87,8 +87,7 @@ const Auth = () => {
             title: "Welcome back!",
             description: "You have been signed in successfully.",
           });
-          // Existing users go to home, they'll be checked for subscription when accessing dashboard
-          navigate("/");
+          // User will be redirected to dashboard automatically via useAuth hook
         }
       }
     } catch (error) {
@@ -111,8 +110,8 @@ const Auth = () => {
           </CardTitle>
           <CardDescription>
             {isSignUp 
-              ? "Create your account to get started" 
-              : "Sign in to access your dashboard"
+              ? "Create your account to access the Stoic dashboard" 
+              : "Sign in to access your Stoic dashboard"
             }
           </CardDescription>
         </CardHeader>
