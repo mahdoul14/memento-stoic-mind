@@ -14,7 +14,7 @@ export type Database = {
   }
   public: {
     Tables: {
-      "journal_entries.csv": {
+      journal_entries: {
         Row: {
           content: string | null
           created_at: string | null

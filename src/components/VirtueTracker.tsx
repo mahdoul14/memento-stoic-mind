@@ -1,7 +1,7 @@
 
-import { useState } from "react";
+import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from "@/components/ui/use-toast";
 
 interface VirtueTrackerProps {
@@ -9,134 +9,131 @@ interface VirtueTrackerProps {
 }
 
 const virtues = [
-  { name: "Courage", key: "courage" as const, icon: "🛡️" },
-  { name: "Wisdom", key: "wisdom" as const, icon: "🧠" },
-  { name: "Justice", key: "justice" as const, icon: "⚖️" },
-  { name: "Temperance", key: "temperance" as const, icon: "🌿" }
+  { name: "Courage", description: "Bravery in facing challenges" },
+  { name: "Wisdom", description: "Sound judgment and knowledge" },
+  { name: "Justice", description: "Fairness and moral righteousness" },
+  { name: "Temperance", description: "Self-control and moderation" }
 ];
 
 export const VirtueTracker = ({ userId }: VirtueTrackerProps) => {
-  const [ratings, setRatings] = useState({
-    courage: 0,
-    wisdom: 0,
-    justice: 0,
-    temperance: 0
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [ratings, setRatings] = useState<Record<string, number>>({});
+  const [loading, setLoading] = useState(false);
+  const [todaysRatings, setTodaysRatings] = useState<Record<string, number>>({});
 
-  const handleRatingChange = (virtue: keyof typeof ratings, rating: number) => {
-    setRatings(prev => ({
-      ...prev,
-      [virtue]: rating
-    }));
+  useEffect(() => {
+    fetchTodaysRatings();
+  }, [userId]);
+
+  const fetchTodaysRatings = async () => {
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const { data, error } = await supabase
+        .from('virtue_tracker')
+        .select('virtue, rating')
+        .eq('user_id', userId)
+        .eq('date', today);
+
+      if (error) throw error;
+
+      const ratingsMap: Record<string, number> = {};
+      data?.forEach(entry => {
+        if (entry.virtue && entry.rating) {
+          ratingsMap[entry.virtue] = entry.rating;
+        }
+      });
+      
+      setTodaysRatings(ratingsMap);
+      setRatings(ratingsMap);
+    } catch (error) {
+      console.error('Error fetching ratings:', error);
+    }
   };
 
-  const handleSubmit = async () => {
-    // Check if all virtues have been rated
-    const unratedVirtues = Object.entries(ratings).filter(([_, rating]) => rating === 0);
-    if (unratedVirtues.length > 0) {
-      toast({
-        title: "Please rate all virtues",
-        description: "You need to provide a rating for each virtue before submitting.",
-        variant: "destructive"
-      });
-      return;
-    }
+  const handleRatingChange = (virtue: string, rating: number) => {
+    setRatings(prev => ({ ...prev, [virtue]: rating }));
+  };
 
-    setIsSubmitting(true);
+  const saveRating = async (virtue: string, rating: number) => {
+    setLoading(true);
     try {
-      console.log('Submitting virtue ratings:', ratings);
+      const today = new Date().toISOString().split('T')[0];
       
-      const { data, error } = await supabase
-        .from('virtue_entries')
-        .insert({
+      const { error } = await supabase
+        .from('virtue_tracker')
+        .upsert({
           user_id: userId,
-          courage: ratings.courage,
-          wisdom: ratings.wisdom,
-          justice: ratings.justice,
-          temperance: ratings.temperance,
-          date: new Date().toISOString().split('T')[0]
-        })
-        .select();
+          virtue: virtue,
+          rating: rating,
+          date: today
+        }, {
+          onConflict: 'user_id,virtue,date'
+        });
 
-      console.log('Virtue submission result:', { data, error });
+      if (error) throw error;
 
-      if (error) {
-        console.error('Supabase error:', error);
-        throw error;
-      }
-
-      // Reset ratings after successful submission
-      setRatings({
-        courage: 0,
-        wisdom: 0,
-        justice: 0,
-        temperance: 0
-      });
-
+      setTodaysRatings(prev => ({ ...prev, [virtue]: rating }));
+      
       toast({
-        title: "Virtues tracked successfully",
-        description: "Your virtue ratings have been saved for today.",
+        title: "Rating saved",
+        description: `Your ${virtue.toLowerCase()} rating has been recorded.`,
       });
     } catch (error) {
-      console.error('Error saving virtue ratings:', error);
+      console.error('Error saving rating:', error);
       toast({
-        title: "Error saving ratings",
-        description: error instanceof Error ? error.message : "There was a problem saving your virtue ratings. Please try again.",
+        title: "Error",
+        description: "Failed to save rating. Please try again.",
         variant: "destructive"
       });
     } finally {
-      setIsSubmitting(false);
+      setLoading(false);
     }
   };
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-2 gap-6">
-        {virtues.map((virtue) => (
-          <div key={virtue.key} className="flex flex-col items-center space-y-3">
-            {/* Virtue Icon and Name */}
-            <div className="flex flex-col items-center space-y-1">
-              <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-lg hover:bg-gray-200 transition-colors duration-200">
-                {virtue.icon}
-              </div>
-              <span className="text-sm font-medium text-gray-800">{virtue.name}</span>
-            </div>
-
-            {/* Rating Dots */}
-            <div className="flex space-x-2">
+      {virtues.map((virtue) => (
+        <div key={virtue.name} className="space-y-3">
+          <div>
+            <h4 className="font-semibold text-black">{virtue.name}</h4>
+            <p className="text-sm text-gray-600">{virtue.description}</p>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-500 w-16">Poor</span>
+            <div className="flex gap-1">
               {[1, 2, 3, 4, 5].map((rating) => (
                 <button
                   key={rating}
-                  onClick={() => handleRatingChange(virtue.key, rating)}
-                  className={`w-4 h-4 rounded-full border-2 transition-all duration-200 hover:scale-110 ${
-                    ratings[virtue.key] >= rating
+                  onClick={() => handleRatingChange(virtue.name, rating)}
+                  className={`w-8 h-8 rounded-full border-2 transition-all duration-200 ${
+                    (ratings[virtue.name] || 0) >= rating
                       ? 'bg-black border-black'
                       : 'bg-white border-gray-300 hover:border-gray-400'
                   }`}
-                  disabled={isSubmitting}
                 />
               ))}
             </div>
-
-            {/* Current Rating Display */}
-            <div className="text-xs text-gray-500">
-              {ratings[virtue.key] > 0 ? ratings[virtue.key] : '-'}/5
-            </div>
+            <span className="text-sm text-gray-500 w-16">Excellent</span>
+            
+            {ratings[virtue.name] && ratings[virtue.name] !== todaysRatings[virtue.name] && (
+              <Button
+                onClick={() => saveRating(virtue.name, ratings[virtue.name])}
+                disabled={loading}
+                size="sm"
+                className="ml-2 bg-black text-white hover:bg-gray-800"
+              >
+                Save
+              </Button>
+            )}
           </div>
-        ))}
-      </div>
-
-      {/* Submit Button */}
-      <div className="flex justify-center pt-4">
-        <Button
-          onClick={handleSubmit}
-          disabled={isSubmitting || Object.values(ratings).every(rating => rating === 0)}
-          className="bg-black text-white hover:bg-gray-800 font-medium rounded-full px-8 py-2 transition-all duration-200 hover:scale-105 shadow-lg"
-        >
-          {isSubmitting ? 'Saving...' : 'Track Virtues'}
-        </Button>
-      </div>
+          
+          {todaysRatings[virtue.name] && (
+            <div className="text-xs text-green-600">
+              ✓ Rated {todaysRatings[virtue.name]}/5 today
+            </div>
+          )}
+        </div>
+      ))}
     </div>
   );
 };
